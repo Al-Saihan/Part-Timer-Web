@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -26,34 +27,48 @@ class AuthController extends Controller
             'user_type' => $request->user_type,
         ]);
 
+        $token = $user->createToken('mobile-token')->plainTextToken;
+
         return response()->json([
             'success' => true,
             'user' => $user,
-            'token' => 'demo_token_' . $user->id
+            'token' => $token
         ]);
     }
 
     // LOGIN
     public function login(Request $request)
     {
-        $request->validate([
+        $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required'
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        if (!Auth::attempt($credentials)) {
+            return response()->json(['message' => 'Invalid credentials'], 401);
+        }
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid credentials'
-            ], 401);
+        $user = Auth::user();
+        $token = $user->createToken('mobile-token')->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token
+        ]);
+    }
+
+    public function logout(Request $request)
+    {
+        // Revoke the current access token
+        if ($request->user()->currentAccessToken()) {
+            $request->user()->currentAccessToken()->delete();
         }
 
         return response()->json([
             'success' => true,
-            'user' => $user,
-            'token' => 'demo_token_' . $user->id
+            'message' => 'Logged out successfully'
         ]);
     }
+
+
 }
