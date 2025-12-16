@@ -3,122 +3,210 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:header container class="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
-            <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
+    <body class="min-h-screen bg-white text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+        <div class="min-h-screen flex flex-col">
+            <header class="border-b border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900">
+                <div class="mx-auto flex max-w-7xl items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <button
+                            type="button"
+                            class="rounded-md border border-transparent px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-accent dark:text-zinc-200 lg:hidden"
+                            data-open-mobile-menu
+                        >
+                            Menu
+                        </button>
 
-            <a href="{{ route('dashboard') }}" class="ms-2 me-5 flex items-center space-x-2 rtl:space-x-reverse lg:ms-0" wire:navigate>
-                <x-app-logo />
-            </a>
+                        <a href="{{ route('dashboard') }}" class="flex items-center space-x-2 rtl:space-x-reverse">
+                            <x-app-logo class="h-8 w-8" />
+                            <span class="text-base font-semibold">{{ config('app.name', 'Laravel') }}</span>
+                        </a>
 
-            <flux:navbar class="-mb-px max-lg:hidden">
-                <flux:navbar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                    {{ __('Dashboard') }}
-                </flux:navbar.item>
-            </flux:navbar>
+                        <nav class="hidden items-center gap-2 lg:flex">
+                            <a
+                                href="{{ route('dashboard') }}"
+                                class="rounded-md px-3 py-2 text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 {{ request()->routeIs('dashboard') ? 'bg-zinc-100 dark:bg-zinc-800' : '' }}"
+                            >
+                                {{ __('Dashboard') }}
+                            </a>
+                        </nav>
+                    </div>
 
-            <flux:spacer />
+                    <div class="flex items-center gap-3 text-sm">
+                        <div class="hidden items-center gap-2 sm:flex">
+                            <a
+                                href="https://github.com/laravel/livewire-starter-kit"
+                                target="_blank"
+                                class="rounded-md px-3 py-2 font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                            >
+                                {{ __('Repository') }}
+                            </a>
+                            <a
+                                href="https://laravel.com/docs/starter-kits#livewire"
+                                target="_blank"
+                                class="rounded-md px-3 py-2 font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                            >
+                                {{ __('Documentation') }}
+                            </a>
+                        </div>
 
-            <flux:navbar class="me-1.5 space-x-0.5 rtl:space-x-reverse py-0!">
-                <flux:tooltip :content="__('Search')" position="bottom">
-                    <flux:navbar.item class="!h-10 [&>div>svg]:size-5" icon="magnifying-glass" href="#" :label="__('Search')" />
-                </flux:tooltip>
-                <flux:tooltip :content="__('Repository')" position="bottom">
-                    <flux:navbar.item
-                        class="h-10 max-lg:hidden [&>div>svg]:size-5"
-                        icon="folder-git-2"
-                        href="https://github.com/laravel/livewire-starter-kit"
-                        target="_blank"
-                        :label="__('Repository')"
-                    />
-                </flux:tooltip>
-                <flux:tooltip :content="__('Documentation')" position="bottom">
-                    <flux:navbar.item
-                        class="h-10 max-lg:hidden [&>div>svg]:size-5"
-                        icon="book-open-text"
-                        href="https://laravel.com/docs/starter-kits#livewire"
-                        target="_blank"
-                        label="Documentation"
-                    />
-                </flux:tooltip>
-            </flux:navbar>
-
-            <!-- Desktop User Menu -->
-            <flux:dropdown position="top" align="end">
-                <flux:profile
-                    class="cursor-pointer"
-                    :initials="auth()->user()->initials()"
-                />
-
-                <flux:menu>
-                    <flux:menu.radio.group>
-                        <div class="p-0 text-sm font-normal">
-                            <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
-                                <span class="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-lg">
-                                    <span
-                                        class="flex h-full w-full items-center justify-center rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white"
-                                    >
-                                        {{ auth()->user()->initials() }}
-                                    </span>
+                        <div class="relative" data-user-menu>
+                            <button
+                                type="button"
+                                class="flex items-center gap-2 rounded-md px-2 py-1 font-medium hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-accent dark:hover:bg-zinc-800"
+                                data-user-menu-button
+                            >
+                                <span class="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-200 text-sm font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100">
+                                    {{ auth()->user()->initials() }}
                                 </span>
+                                <span class="hidden text-left leading-tight sm:block">
+                                    <span class="block text-sm font-semibold">{{ auth()->user()->name }}</span>
+                                    <span class="block text-xs text-zinc-500 dark:text-zinc-400">{{ auth()->user()->email }}</span>
+                                </span>
+                            </button>
 
-                                <div class="grid flex-1 text-start text-sm leading-tight">
-                                    <span class="truncate font-semibold">{{ auth()->user()->name }}</span>
-                                    <span class="truncate text-xs">{{ auth()->user()->email }}</span>
+                            <div
+                                class="absolute right-0 mt-2 w-56 origin-top-right divide-y divide-zinc-200 rounded-md border border-zinc-200 bg-white shadow-lg dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900"
+                                data-user-menu-panel
+                                hidden
+                            >
+                                <div class="px-3 py-3 text-sm">
+                                    <div class="font-semibold">{{ auth()->user()->name }}</div>
+                                    <div class="truncate text-xs text-zinc-500 dark:text-zinc-400">{{ auth()->user()->email }}</div>
+                                </div>
+                                <div class="py-1 text-sm">
+                                    <a
+                                        href="{{ route('profile.edit') }}"
+                                        class="block px-3 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                    >
+                                        {{ __('Settings') }}
+                                    </a>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button
+                                            type="submit"
+                                            class="block w-full px-3 py-2 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                            data-test="logout-button"
+                                        >
+                                            {{ __('Log Out') }}
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
-                    </flux:menu.radio.group>
+                    </div>
+                </div>
+            </header>
 
-                    <flux:menu.separator />
+            <div
+                id="mobile-menu"
+                class="fixed inset-0 z-40 hidden bg-black/40 lg:hidden"
+                aria-hidden="true"
+            >
+                <div class="h-full w-72 border-e border-zinc-200 bg-zinc-50 p-4 text-sm shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
+                    <div class="flex items-center justify-between">
+                        <a href="{{ route('dashboard') }}" class="flex items-center space-x-2 rtl:space-x-reverse">
+                            <x-app-logo class="h-8 w-8" />
+                            <span class="text-base font-semibold">{{ config('app.name', 'Laravel') }}</span>
+                        </a>
+                        <button
+                            type="button"
+                            class="rounded-md px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-accent dark:text-zinc-200"
+                            data-close-mobile-menu
+                        >
+                            Close
+                        </button>
+                    </div>
 
-                    <flux:menu.radio.group>
-                        <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
-                    </flux:menu.radio.group>
+                    <div class="mt-6 space-y-1">
+                        <a
+                            href="{{ route('dashboard') }}"
+                            class="block rounded-md px-3 py-2 font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 {{ request()->routeIs('dashboard') ? 'bg-zinc-100 dark:bg-zinc-800' : '' }}"
+                        >
+                            {{ __('Dashboard') }}
+                        </a>
+                        <a
+                            href="https://github.com/laravel/livewire-starter-kit"
+                            target="_blank"
+                            class="block rounded-md px-3 py-2 font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        >
+                            {{ __('Repository') }}
+                        </a>
+                        <a
+                            href="https://laravel.com/docs/starter-kits#livewire"
+                            target="_blank"
+                            class="block rounded-md px-3 py-2 font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        >
+                            {{ __('Documentation') }}
+                        </a>
+                        <a
+                            href="{{ route('profile.edit') }}"
+                            class="block rounded-md px-3 py-2 font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        >
+                            {{ __('Settings') }}
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button
+                                type="submit"
+                                class="block w-full rounded-md px-3 py-2 text-left font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                data-test="logout-button"
+                            >
+                                {{ __('Log Out') }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
-                    <flux:menu.separator />
+            <main class="flex-1 bg-white dark:bg-zinc-900">
+                {{ $slot }}
+            </main>
+        </div>
 
-                    <form method="POST" action="{{ route('logout') }}" class="w-full">
-                        @csrf
-                        <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full" data-test="logout-button">
-                            {{ __('Log Out') }}
-                        </flux:menu.item>
-                    </form>
-                </flux:menu>
-            </flux:dropdown>
-        </flux:header>
+        <script>
+            // Mobile menu toggle
+            const mobileMenu = document.getElementById('mobile-menu');
+            const openMobileBtn = document.querySelector('[data-open-mobile-menu]');
+            const closeMobileBtn = document.querySelector('[data-close-mobile-menu]');
 
-        <!-- Mobile Menu -->
-        <flux:sidebar stashable sticky class="lg:hidden border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
-            <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
+            const openMobileMenu = () => mobileMenu?.classList.remove('hidden');
+            const closeMobileMenu = () => mobileMenu?.classList.add('hidden');
 
-            <a href="{{ route('dashboard') }}" class="ms-1 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
-                <x-app-logo />
-            </a>
+            openMobileBtn?.addEventListener('click', openMobileMenu);
+            closeMobileBtn?.addEventListener('click', closeMobileMenu);
+            mobileMenu?.addEventListener('click', (event) => {
+                if (event.target === mobileMenu) {
+                    closeMobileMenu();
+                }
+            });
 
-            <flux:navlist variant="outline">
-                <flux:navlist.group :heading="__('Platform')">
-                    <flux:navlist.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                    {{ __('Dashboard') }}
-                    </flux:navlist.item>
-                </flux:navlist.group>
-            </flux:navlist>
+            // User menu toggle
+            const userMenuButton = document.querySelector('[data-user-menu-button]');
+            const userMenuPanel = document.querySelector('[data-user-menu-panel]');
 
-            <flux:spacer />
+            const closeUserMenu = () => userMenuPanel?.setAttribute('hidden', '');
+            const toggleUserMenu = () => {
+                if (!userMenuPanel) return;
+                const isHidden = userMenuPanel.hasAttribute('hidden');
+                if (isHidden) {
+                    userMenuPanel.removeAttribute('hidden');
+                } else {
+                    closeUserMenu();
+                }
+            };
 
-            <flux:navlist variant="outline">
-                <flux:navlist.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                {{ __('Repository') }}
-                </flux:navlist.item>
+            userMenuButton?.addEventListener('click', (event) => {
+                event.stopPropagation();
+                toggleUserMenu();
+            });
 
-                <flux:navlist.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                {{ __('Documentation') }}
-                </flux:navlist.item>
-            </flux:navlist>
-        </flux:sidebar>
-
-        {{ $slot }}
-
-        @fluxScripts
+            document.addEventListener('click', (event) => {
+                if (!userMenuPanel || userMenuPanel.hasAttribute('hidden')) return;
+                const withinMenu = event.target.closest('[data-user-menu]');
+                if (!withinMenu) {
+                    closeUserMenu();
+                }
+            });
+        </script>
     </body>
 </html>

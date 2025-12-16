@@ -9,17 +9,8 @@
                 recovery_code: '',
                 toggleInput() {
                     this.showRecoveryInput = !this.showRecoveryInput;
-
                     this.code = '';
                     this.recovery_code = '';
-
-                    $dispatch('clear-2fa-auth-code');
-
-                    $nextTick(() => {
-                        this.showRecoveryInput
-                            ? this.$refs.recovery_code?.focus()
-                            : $dispatch('focus-2fa-auth-code');
-                    });
                 },
             }"
         >
@@ -37,57 +28,63 @@
                 />
             </div>
 
-            <form method="POST" action="{{ route('two-factor.login.store') }}">
+            <form method="POST" action="{{ route('two-factor.login.store') }}" class="space-y-5">
                 @csrf
 
                 <div class="space-y-5 text-center">
                     <div x-show="!showRecoveryInput">
-                        <div class="flex items-center justify-center my-5">
-                            <flux:otp
+                        <div class="my-5 flex items-center justify-center">
+                            <input
                                 x-model="code"
-                                length="6"
                                 name="code"
-                                label="OTP Code"
-                                label:sr-only
-                                class="mx-auto"
-                             />
+                                type="text"
+                                inputmode="numeric"
+                                pattern="[0-9]*"
+                                maxlength="6"
+                                class="mx-auto w-48 rounded-md border border-zinc-300 bg-white px-4 py-3 text-center text-lg tracking-widest text-zinc-900 shadow-sm outline-none ring-accent/40 focus:border-accent focus:ring-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                                placeholder="••••••"
+                                aria-label="{{ __('Authentication code') }}"
+                            />
+                            @error('code')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
                     <div x-show="showRecoveryInput">
                         <div class="my-5">
-                            <flux:input
+                            <label for="recovery_code" class="sr-only">{{ __('Recovery code') }}</label>
+                            <input
+                                id="recovery_code"
                                 type="text"
                                 name="recovery_code"
-                                x-ref="recovery_code"
                                 x-bind:required="showRecoveryInput"
                                 autocomplete="one-time-code"
                                 x-model="recovery_code"
+                                class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none ring-accent/40 focus:border-accent focus:ring-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                                placeholder="{{ __('Enter a recovery code') }}"
                             />
                         </div>
 
                         @error('recovery_code')
-                            <flux:text color="red">
-                                {{ $message }}
-                            </flux:text>
+                            <p class="text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <flux:button
-                        variant="primary"
+                    <button
                         type="submit"
-                        class="w-full"
+                        class="w-full rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm transition hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-accent"
                     >
                         {{ __('Continue') }}
-                    </flux:button>
+                    </button>
                 </div>
 
                 <div class="mt-5 space-x-0.5 text-sm leading-5 text-center">
                     <span class="opacity-50">{{ __('or you can') }}</span>
-                    <div class="inline font-medium underline cursor-pointer opacity-80">
-                        <span x-show="!showRecoveryInput" @click="toggleInput()">{{ __('login using a recovery code') }}</span>
-                        <span x-show="showRecoveryInput" @click="toggleInput()">{{ __('login using an authentication code') }}</span>
-                    </div>
+                    <button type="button" @click="toggleInput()" class="inline font-medium underline opacity-80">
+                        <span x-show="!showRecoveryInput">{{ __('login using a recovery code') }}</span>
+                        <span x-show="showRecoveryInput">{{ __('login using an authentication code') }}</span>
+                    </button>
                 </div>
             </form>
         </div>

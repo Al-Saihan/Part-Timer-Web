@@ -74,36 +74,64 @@ new class extends Component {
 
     <x-settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
         <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
-            <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
+            <div class="space-y-2">
+                <label for="name" class="text-sm font-medium text-zinc-800 dark:text-zinc-100">{{ __('Name') }}</label>
+                <input
+                    id="name"
+                    type="text"
+                    wire:model="name"
+                    required
+                    autofocus
+                    autocomplete="name"
+                    class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none ring-accent/40 focus:border-accent focus:ring-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                />
+                @error('name')
+                    <p class="text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
 
-            <div>
-                <flux:input wire:model="email" :label="__('Email')" type="email" required autocomplete="email" />
+            <div class="space-y-2">
+                <label for="email" class="text-sm font-medium text-zinc-800 dark:text-zinc-100">{{ __('Email') }}</label>
+                <input
+                    id="email"
+                    type="email"
+                    wire:model="email"
+                    required
+                    autocomplete="email"
+                    class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none ring-accent/40 focus:border-accent focus:ring-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                />
+                @error('email')
+                    <p class="text-sm text-red-600">{{ $message }}</p>
+                @enderror
 
-                @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail &&! auth()->user()->hasVerifiedEmail())
-                    <div>
-                        <flux:text class="mt-4">
-                            {{ __('Your email address is unverified.') }}
-
-                            <flux:link class="text-sm cursor-pointer" wire:click.prevent="resendVerificationNotification">
-                                {{ __('Click here to re-send the verification email.') }}
-                            </flux:link>
-                        </flux:text>
+                @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! auth()->user()->hasVerifiedEmail())
+                    <div class="mt-4 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                        <p>{{ __('Your email address is unverified.') }}</p>
+                        <button
+                            type="button"
+                            class="text-sm font-medium text-accent hover:underline"
+                            wire:click.prevent="resendVerificationNotification"
+                        >
+                            {{ __('Click here to re-send the verification email.') }}
+                        </button>
 
                         @if (session('status') === 'verification-link-sent')
-                            <flux:text class="mt-2 font-medium !dark:text-green-400 !text-green-600">
+                            <p class="text-sm font-medium text-green-600 dark:text-green-400">
                                 {{ __('A new verification link has been sent to your email address.') }}
-                            </flux:text>
+                            </p>
                         @endif
                     </div>
                 @endif
             </div>
 
             <div class="flex items-center gap-4">
-                <div class="flex items-center justify-end">
-                    <flux:button variant="primary" type="submit" class="w-full" data-test="update-profile-button">
-                        {{ __('Save') }}
-                    </flux:button>
-                </div>
+                <button
+                    type="submit"
+                    class="w-full rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm transition hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-accent"
+                    data-test="update-profile-button"
+                >
+                    {{ __('Save') }}
+                </button>
 
                 <x-action-message class="me-3" on="profile-updated">
                     {{ __('Saved.') }}
