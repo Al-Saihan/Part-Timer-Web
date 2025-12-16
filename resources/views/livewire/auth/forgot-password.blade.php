@@ -1,40 +1,43 @@
 <x-layouts.auth>
-    <div class="flex flex-col gap-6">
-        <x-auth-header :title="__('Forgot password')" :description="__('Enter your email to receive a password reset link')" />
+    <div class="flex flex-col gap-8">
+        <!-- Header -->
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-blue-900">Forgot Password?</h1>
+            <p class="mt-2 text-sm text-blue-700">Enter your email and we'll send you a link to reset your password</p>
+        </div>
 
         <x-auth-session-status class="text-center" :status="session('status')" />
 
         <form method="POST" action="{{ route('password.email') }}" class="flex flex-col gap-5">
             @csrf
 
-            <div class="space-y-2">
-                <label for="email" class="text-sm font-medium text-zinc-800 dark:text-zinc-100">{{ __('Email Address') }}</label>
+            <div>
+                <label for="email" class="block text-sm font-medium text-blue-900 mb-2">Email Address</label>
                 <input
                     id="email"
                     name="email"
                     type="email"
                     required
                     autofocus
-                    placeholder="email@example.com"
-                    class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none ring-accent/40 focus:border-accent focus:ring-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                    placeholder="you@example.com"
+                    class="w-full rounded-lg border border-blue-200 bg-white px-4 py-2.5 text-sm text-blue-900 placeholder-blue-400 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-300 outline-none"
                 />
                 @error('email')
-                    <p class="text-sm text-red-600">{{ $message }}</p>
+                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                 @enderror
             </div>
 
             <button
                 type="submit"
-                class="w-full rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm transition hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-accent"
-                data-test="email-password-reset-link-button"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition mt-2"
             >
-                {{ __('Email password reset link') }}
+                Send Reset Link
             </button>
         </form>
 
-        <div class="space-x-1 rtl:space-x-reverse text-center text-sm text-zinc-400">
-            <span>{{ __('Or, return to') }}</span>
-            <a href="{{ route('login') }}" class="text-accent hover:underline">{{ __('log in') }}</a>
+        <div class="text-center text-sm text-blue-700">
+            <span>Remember your password?</span>
+            <a href="{{ route('login') }}" class="font-semibold text-blue-600 hover:text-blue-700">Sign In</a>
         </div>
     </div>
 </x-layouts.auth>

@@ -1,78 +1,83 @@
 <x-layouts.auth>
-    <div class="flex flex-col gap-6">
-        <x-auth-header :title="__('Log in to your account')" :description="__('Enter your email and password below to log in')" />
+    <div class="space-y-8">
+        <!-- Header -->
+        <div class="space-y-3 text-center">
+            <h1 class="text-3xl font-bold text-blue-900">Sign-In</h1>
+        </div>
 
-        <x-auth-session-status class="text-center" :status="session('status')" />
+        <!-- Session Status -->
+        <x-auth-session-status class="text-center rounded-lg bg-blue-50 p-4 text-blue-800 border border-blue-200"
+            :status="session('status')" />
 
-        <form method="POST" action="{{ route('login.store') }}" class="flex flex-col gap-5">
+        <!-- Login Form -->
+        <form method="POST" action="{{ route('login.store') }}" class="space-y-6">
             @csrf
 
+            <!-- Email Input -->
             <div class="space-y-2">
-                <label for="email" class="text-sm font-medium text-zinc-800 dark:text-zinc-100">{{ __('Email address') }}</label>
-                <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value="{{ old('email') }}"
-                    required
-                    autofocus
-                    autocomplete="email"
-                    placeholder="email@example.com"
-                    class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none ring-accent/40 focus:border-accent focus:ring-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-                />
+                <label for="email" class="block text-sm font-medium text-blue-900">
+                    Email Address
+                </label>
+                <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus
+                    autocomplete="email" placeholder="you@example.com"
+                    class="w-full rounded-lg border border-blue-200 bg-white px-4 py-3 text-sm text-blue-900 shadow-sm outline-none transition-all duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-200 focus:shadow-blue-100" />
                 @error('email')
-                    <p class="text-sm text-red-600">{{ $message }}</p>
+                    <p class="text-sm text-red-600 mt-1 flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        {{ $message }}
+                    </p>
                 @enderror
             </div>
 
+            <!-- Password Input -->
             <div class="space-y-2">
-                <div class="flex items-center justify-between">
-                    <label for="password" class="text-sm font-medium text-zinc-800 dark:text-zinc-100">{{ __('Password') }}</label>
-                    @if (Route::has('password.request'))
-                        <a class="text-sm text-accent hover:underline" href="{{ route('password.request') }}">
-                            {{ __('Forgot your password?') }}
-                        </a>
-                    @endif
-                </div>
-                <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                    autocomplete="current-password"
-                    placeholder="{{ __('Password') }}"
-                    class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none ring-accent/40 focus:border-accent focus:ring-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-                />
+                <label for="password" class="block text-sm font-medium text-blue-900">
+                    Password
+                </label>
+                <input id="password" name="password" type="password" required autocomplete="current-password"
+                    placeholder="Enter your password"
+                    class="w-full rounded-lg border border-blue-200 bg-white px-4 py-3 text-sm text-blue-900 shadow-sm outline-none transition-all duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-200 focus:shadow-blue-100" />
                 @error('password')
-                    <p class="text-sm text-red-600">{{ $message }}</p>
+                    <p class="text-sm text-red-600 mt-1 flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        {{ $message }}
+                    </p>
                 @enderror
+                @if (Route::has('password.request'))
+                    <a href="{{ route('password.request') }}"
+                        class="text-xs font-medium text-blue-600 transition hover:text-blue-700 mt-2 inline-block">
+                        Forgot password?
+                    </a>
+                @endif
             </div>
 
-            <label class="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-200">
-                <input
-                    type="checkbox"
-                    name="remember"
-                    value="1"
-                    {{ old('remember') ? 'checked' : '' }}
-                    class="h-4 w-4 rounded border-zinc-300 text-accent focus:ring-2 focus:ring-accent dark:border-zinc-700"
-                />
-                <span>{{ __('Remember me') }}</span>
-            </label>
 
-            <button
-                type="submit"
-                class="w-full rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm transition hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-accent"
-                data-test="login-button"
-            >
-                {{ __('Log in') }}
+
+            <!-- Sign In Button -->
+            <button type="submit"
+                class="w-full rounded-lg bg-blue-600 px-4 py-3.5 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:bg-blue-700 hover:shadow-xl hover:scale-[1.02] focus:outline-none focus:ring-3 focus:ring-blue-300 focus:ring-offset-2 active:scale-[0.98]"
+                data-test="login-button">
+                Sign In
             </button>
         </form>
 
-        @if (Route::has('register'))
-            <div class="space-x-1 text-sm text-center rtl:space-x-reverse text-zinc-600 dark:text-zinc-400">
-                <span>{{ __("Don't have an account?") }}</span>
-                <a href="{{ route('register') }}" class="text-accent hover:underline">{{ __('Sign up') }}</a>
-            </div>
-        @endif
+        <!-- Sign Up Link -->
+        <div class="text-center pt-4 border-t border-blue-100">
+            <p class="text-sm text-blue-800">
+                Don't have an account?
+                <a href="{{ route('register') }}"
+                    class="font-semibold text-blue-600 transition hover:text-blue-700 ml-1">
+                    Sign up now
+                </a>
+            </p>
+        </div>
     </div>
 </x-layouts.auth>

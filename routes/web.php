@@ -5,12 +5,28 @@ use Laravel\Fortify\Features;
 use Livewire\Volt\Volt;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('landing');
 })->name('home');
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+// Dashboard redirect - handles initial redirect based on user type
+Route::get('/dashboard', function () {
+    if (auth()->user()->user_type === 'seeker') {
+        return redirect()->route('seeker.dashboard');
+    } elseif (auth()->user()->user_type === 'recruiter') {
+        return redirect()->route('recruiter.dashboard');
+    }
+    return redirect('/');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+// Seeker Dashboard
+Route::get('/dashboard/seeker', function () {
+    return view('dashboards.seeker');
+})->middleware(['auth', 'verified'])->name('seeker.dashboard');
+
+// Recruiter Dashboard
+Route::get('/dashboard/recruiter', function () {
+    return view('dashboards.recruiter');
+})->middleware(['auth', 'verified'])->name('recruiter.dashboard');
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');
