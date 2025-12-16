@@ -80,4 +80,17 @@ class JobController extends Controller
         
         return response()->json($jobs);
     }
+
+    // GET JOB APPLICANTS FOR RECRUITER
+    public function getApplicants(Request $request)
+    {
+        $applicants = JobApplication::whereHas('job', function($query) use ($request) {
+            $query->where('recruiter_id', $request->user()->id);
+        })
+        ->with(['seeker:id,name,email,created_at', 'job:id,title'])
+        ->latest('applied_at')
+        ->get();
+        
+        return response()->json($applicants);
+    }
 }

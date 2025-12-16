@@ -33,8 +33,12 @@ Route::get('/dashboard/seeker', function () {
 })->middleware(['auth', 'verified'])->name('seeker.dashboard');
 
 // Recruiter Dashboard
-Route::get('/dashboard/recruiter', function () {
-    return view('dashboards.recruiter');
+Route::get('/dashboard/recruiter', function (\Illuminate\Http\Request $request) {
+    $controller = new \App\Http\Controllers\Api\JobController();
+    $response = $controller->getApplicants($request);
+    $applicants = json_decode($response->getContent());
+    
+    return view('dashboards.recruiter', compact('applicants'));
 })->middleware(['auth', 'verified'])->name('recruiter.dashboard');
 
 // Posted Jobs (Recruiter)

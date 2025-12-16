@@ -65,21 +65,74 @@
             <hr class="my-6 border-blue-200">
 
             <!-- Jobs Applicants-->
-            <h3 class="text-lg font-bold text-blue-900 mb-4 text-center">Job Applicants</h3>
-            <div class="bg-white rounded-lg p-6">
-                <div class="text-center py-4">
-                    <div class="mx-auto h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mb-3">
-                        <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
+            <h3 class="text-lg font-bold text-blue-900 mb-4">Job Applicants</h3>
+            <div class="space-y-4">
+                @forelse($applicants as $applicant)
+                    @php
+                        $status = $applicant->STATUS ?? $applicant->status ?? 'pending';
+                        $seeker = $applicant->seeker ?? null;
+                        $job = $applicant->job ?? null;
+                    @endphp
+                    <div class="bg-white rounded-lg p-4 border border-blue-200">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3">
+                                    <div class="h-12 w-12 rounded-full bg-blue-200 flex items-center justify-center">
+                                        <span class="text-lg font-bold text-blue-900">{{ strtoupper(substr($seeker?->name ?? 'U', 0, 1)) }}</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-blue-900">{{ $seeker?->name ?? 'Unknown User' }}</h4>
+                                        <p class="text-blue-700 text-sm">{{ $seeker?->email ?? 'N/A' }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3 flex items-center gap-4 text-sm">
+                                    <span class="text-blue-600">Applied for: <span class="font-medium">{{ $job?->title ?? 'Job' }}</span></span>
+                                    <span class="text-blue-500">{{ \Carbon\Carbon::parse($applicant->applied_at ?? now())->diffForHumans() }}</span>
+                                </div>
+                                
+                                <div class="mt-2">
+                                    <span class="px-3 py-1 text-xs rounded-full 
+                                        {{ $status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                        {{ $status === 'accepted' ? 'bg-green-100 text-green-800' : '' }}
+                                        {{ $status === 'rejected' ? 'bg-red-100 text-red-800' : '' }}">
+                                        {{ ucfirst($status) }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                @if($status === 'pending')
+                                    <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
+                                        Accept
+                                    </button>
+                                    <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm">
+                                        Reject
+                                    </button>
+                                @endif
+                                <a href="#" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+                                    View Profile
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    <p class="text-blue-900">No one has applied to your jobs yet</p>
-                    <a href="{{ route('jobs.posted') }}"
-                        class="mt-3 inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
-                        Check Posted Jobs!
-                    </a>
-                </div>
+                @empty
+                    <div class="bg-white rounded-lg p-6">
+                        <div class="text-center py-4">
+                            <div class="mx-auto h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mb-3">
+                                <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <p class="text-blue-900">No one has applied to your jobs yet</p>
+                            <a href="{{ route('jobs.posted') }}"
+                                class="mt-3 inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+                                Check Posted Jobs!
+                            </a>
+                        </div>
+                    </div>
+                @endforelse
             </div>
         </div>
     </div>

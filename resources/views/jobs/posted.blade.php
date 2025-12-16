@@ -59,7 +59,8 @@
             <!-- Page Header -->
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-blue-900">Your Posted Jobs</h2>
-                <a href="{{ route('jobs.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium">
+                <a href="{{ route('jobs.create') }}"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium">
                     + Post New Job
                 </a>
             </div>
@@ -102,13 +103,8 @@
                             <span class="text-blue-300">•</span>
                             <a href="#" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Edit</a>
                             <span class="text-blue-300">•</span>
-                            <form action="#" method="POST" class="inline"
-                                onsubmit="return confirm('Are you sure you want to delete this job?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit"
-                                    class="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
-                            </form>
+                            <a href="#" class="text-red-600 hover:text-blue-800 text-sm font-medium">Delete</a>
+                            <span class="text-blue-300">•</span>
                         </div>
                     </div>
                 @empty
