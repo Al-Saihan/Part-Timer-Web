@@ -39,12 +39,12 @@ class JobController extends Controller
     // APPLY TO JOB (seeker)
     public function apply($id, Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'seeker_id' => 'required|integer'
         ]);
 
         $existing = JobApplication::where('job_id', $id)
-            ->where('seeker_id', $request->seeker_id)
+            ->where('seeker_id', $validated['seeker_id'])
             ->first();
         if ($existing) {
             return response()->json(['message' => 'Already applied'], 400);
@@ -52,7 +52,7 @@ class JobController extends Controller
 
         $application = JobApplication::create([
             'job_id' => $id,
-            'seeker_id' => $request->seeker_id,
+            'seeker_id' => $validated['seeker_id'],
             'STATUS' => 'pending'
         ]);
 
