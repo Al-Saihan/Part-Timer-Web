@@ -50,6 +50,15 @@ Route::get('/jobs/posted', function (\Illuminate\Http\Request $request) {
     return view('jobs.posted', compact('jobs'));
 })->middleware(['auth', 'verified'])->name('jobs.posted');
 
+// Applied Jobs (Seeker)
+Route::get('/jobs/applied', function (\Illuminate\Http\Request $request) {
+    $controller = new \App\Http\Controllers\Api\JobController();
+    $response = $controller->getAppliedJobs($request);
+    $applications = json_decode($response->getContent());
+
+    return view('jobs.applied', compact('applications'));
+})->middleware(['auth', 'verified'])->name('jobs.applied');
+
 // Create Job Form
 Route::get('/jobs/create', function () {
     return view('jobs.create');

@@ -15,6 +15,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // LIST JOBS
     Route::get('/jobs', [JobController::class, 'index']);
 
+    // GET APPLIED JOBS (seeker)
+    Route::get('/jobs/applied', [JobController::class, 'getAppliedJobs']);
+
     // GET POSTED JOBS (recruiter)
     Route::get('/jobs/posted', [JobController::class, 'getPostedJobs']);
 

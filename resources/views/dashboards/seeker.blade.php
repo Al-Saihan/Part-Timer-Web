@@ -8,7 +8,8 @@
                     <div class="flex gap-4 items-center">
                         <a href="{{ route('seeker.dashboard') }}"
                             class="text-blue-900 hover:text-blue-700 text-sm">Home</a>
-                        <a href="#" class="text-blue-900 hover:text-blue-700 text-sm">Applied Jobs</a>
+                        <a href="{{ route('jobs.applied') }}" class="text-blue-900 hover:text-blue-700 text-sm">Applied
+                            Jobs</a>
                         <a href="#" class="text-blue-900 hover:text-blue-700 text-sm">Inbox</a>
 
                         <!-- Profile Dropdown -->
