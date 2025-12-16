@@ -69,4 +69,15 @@ class JobController extends Controller
 
         return response()->json(['message' => 'Applied successfully', 'application' => $application]);
     }
+
+    // GET RECRUITER'S POSTED JOBS
+    public function getPostedJobs(Request $request)
+    {
+        $jobs = Job::where('recruiter_id', $request->user()->id)
+            ->withCount('applications')
+            ->latest()
+            ->get();
+        
+        return response()->json($jobs);
+    }
 }

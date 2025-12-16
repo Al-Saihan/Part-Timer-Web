@@ -37,6 +37,34 @@ Route::get('/dashboard/recruiter', function () {
     return view('dashboards.recruiter');
 })->middleware(['auth', 'verified'])->name('recruiter.dashboard');
 
+// Posted Jobs (Recruiter)
+Route::get('/jobs/posted', function (\Illuminate\Http\Request $request) {
+    $controller = new \App\Http\Controllers\Api\JobController();
+    $response = $controller->getPostedJobs($request);
+    $jobs = json_decode($response->getContent());
+    
+    return view('jobs.posted', compact('jobs'));
+})->middleware(['auth', 'verified'])->name('jobs.posted');
+
+// Create Job Form
+Route::get('/jobs/create', function () {
+    return view('jobs.create');
+})->middleware(['auth', 'verified'])->name('jobs.create');
+
+// Store Job
+Route::post('/jobs', function (\Illuminate\Http\Request $request) {
+    $request->merge(['recruiter_id' => auth()->id()]);
+    
+    $controller = new \App\Http\Controllers\Api\JobController();
+    $response = $controller->store($request);
+    
+    if ($response->getStatusCode() === 200) {
+        return redirect()->route('jobs.posted')->with('success', 'Job posted successfully!');
+    }
+    
+    return back()->with('error', 'Failed to post job. Please try again.')->withInput();
+})->middleware(['auth', 'verified'])->name('jobs.store');
+
 // Apply to Job
 Route::post('/jobs/{job}/apply', function (\App\Models\Job $job) {
     $existing = \App\Models\JobApplication::where('job_id', $job->id)

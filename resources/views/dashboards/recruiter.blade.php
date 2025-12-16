@@ -8,7 +8,7 @@
                     <div class="flex gap-4 items-center">
                         <a href="{{ route('recruiter.dashboard') }}"
                             class="text-blue-900 hover:text-blue-700 text-sm">Home</a>
-                        <a href="#" class="text-blue-900 hover:text-blue-700 text-sm">Posted Jobs</a>
+                        <a href="{{ route('jobs.posted') }}" class="text-blue-900 hover:text-blue-700 text-sm">Posted Jobs</a>
                         <a href="#" class="text-blue-900 hover:text-blue-700 text-sm">Inbox</a>
 
                         <!-- Profile Dropdown -->
@@ -75,9 +75,9 @@
                         </svg>
                     </div>
                     <p class="text-blue-900">No one has applied to your jobs yet</p>
-                    <a href="#"
+                    <a href="{{ route('jobs.posted') }}"
                         class="mt-3 inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
-                        Post Your First Job
+                        Check Posted Jobs!
                     </a>
                 </div>
             </div>
