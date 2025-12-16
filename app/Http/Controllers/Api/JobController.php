@@ -10,9 +10,20 @@ use App\Models\JobApplication;
 class JobController extends Controller
 {
     // LIST ALL JOBS
-    public function index()
+    public function index(Request $request)
     {
-        $jobs = Job::select('id', 'title', 'description', 'difficulty', 'working_hours', 'payment')->get();
+        $query = Job::select('id', 'title', 'description', 'difficulty', 'working_hours', 'payment');
+        
+        // If user is authenticated, exclude jobs they've already applied to
+        if ($request->user()) {
+            $appliedJobIds = JobApplication::where('seeker_id', $request->user()->id)
+                ->pluck('job_id')
+                ->toArray();
+            
+            $query->whereNotIn('id', $appliedJobIds);
+        }
+        
+        $jobs = $query->get();
         return response()->json($jobs);
     }
 

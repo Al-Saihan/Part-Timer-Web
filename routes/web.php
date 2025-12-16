@@ -20,13 +20,41 @@ Route::get('/dashboard', function () {
 
 // Seeker Dashboard
 Route::get('/dashboard/seeker', function () {
-    return view('dashboards.seeker');
+    $appliedJobIds = \App\Models\JobApplication::where('seeker_id', auth()->id())
+        ->pluck('job_id')
+        ->toArray();
+    
+    $jobs = \App\Models\Job::with('recruiter')
+        ->whereNotIn('id', $appliedJobIds)
+        ->latest()
+        ->get();
+    
+    return view('dashboards.seeker', compact('jobs'));
 })->middleware(['auth', 'verified'])->name('seeker.dashboard');
 
 // Recruiter Dashboard
 Route::get('/dashboard/recruiter', function () {
     return view('dashboards.recruiter');
 })->middleware(['auth', 'verified'])->name('recruiter.dashboard');
+
+// Apply to Job
+Route::post('/jobs/{job}/apply', function (\App\Models\Job $job) {
+    $existing = \App\Models\JobApplication::where('job_id', $job->id)
+        ->where('seeker_id', auth()->id())
+        ->first();
+    
+    if ($existing) {
+        return back()->with('error', 'You have already applied to this job.');
+    }
+    
+    \App\Models\JobApplication::create([
+        'job_id' => $job->id,
+        'seeker_id' => auth()->id(),
+        'STATUS' => 'pending'
+    ]);
+    
+    return back()->with('success', 'Application submitted successfully!');
+})->middleware(['auth', 'verified'])->name('jobs.apply');
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');

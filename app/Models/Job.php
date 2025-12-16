@@ -17,4 +17,14 @@ class Job extends Model
         'working_hours',
         'payment'
     ];
+
+    public function recruiter()
+    {
+        return $this->belongsTo(User::class, 'recruiter_id');
+    }
+
+    public function applications()
+    {
+        return $this->hasMany(JobApplication::class);
+    }
 }
