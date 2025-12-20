@@ -30,7 +30,8 @@ class User extends Authenticatable
         'user_type',
         'bio',
         'skills',
-        'location'
+        'location',
+        'profile_pic'
     ];
 
 

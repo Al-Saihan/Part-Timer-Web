@@ -102,5 +102,66 @@ class AuthController extends Controller
         return response()->json(['success' => true, 'message' => 'Password updated']);
     }
 
+    // UPDATE BIO (authenticated)
+    public function updateBio(Request $request)
+    {
+        $data = $request->validate([
+            'bio' => 'nullable|string'
+        ]);
+
+        $user = $request->user();
+        $user->bio = $data['bio'] ?? null;
+        $user->save();
+
+        return response()->json(['success' => true, 'user' => $user]);
+    }
+
+    // UPDATE SKILLS (authenticated)
+    public function updateSkills(Request $request)
+    {
+        $data = $request->validate([
+            'skills' => 'nullable|string'
+        ]);
+
+        $user = $request->user();
+        $user->skills = $data['skills'] ?? null;
+        $user->save();
+
+        return response()->json(['success' => true, 'user' => $user]);
+    }
+
+    // UPDATE LOCATION (authenticated)
+    public function updateLocation(Request $request)
+    {
+        $data = $request->validate([
+            'location' => 'nullable|string|max:255'
+        ]);
+
+        $user = $request->user();
+        $user->location = $data['location'] ?? null;
+        $user->save();
+
+        return response()->json(['success' => true, 'user' => $user]);
+    }
+
+    // UPDATE PROFILE PIC (authenticated)
+    public function updateProfilePic(Request $request)
+    {
+        $data = $request->validate([
+            'profile_pic' => [
+                'required',
+                'string',
+                // Accept avatar names like: Avatars Set Flat Style-1 ... -50
+                'regex:/^Avatars Set Flat Style-(?:[1-9]|[1-4]\d|50)$/'
+            ]
+        ]);
+
+        $user = $request->user();
+        $user->profile_pic = $data['profile_pic'];
+        $user->save();
+
+        return response()->json(['success' => true, 'user' => $user]);
+    }
+
 
 }

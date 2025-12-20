@@ -36,6 +36,12 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // UPDATE APPLICATION STATUS (recruiter)
     Route::patch('/applications/{id}/status', [JobController::class, 'updateApplicationStatus']);
+
+    // USER PROFILE UPDATES (authenticated)
+    Route::patch('/user/bio', [AuthController::class, 'updateBio']);
+    Route::patch('/user/skills', [AuthController::class, 'updateSkills']);
+    Route::patch('/user/location', [AuthController::class, 'updateLocation']);
+    Route::patch('/user/profile-pic', [AuthController::class, 'updateProfilePic']);
     
     // LOGOUT
     Route::post('/logout', [AuthController::class, 'logout']);
