@@ -1,4 +1,9 @@
 <?php
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\JobController;
+use App\Http\Controllers\Api\AuthController;
+use Illuminate\Http\Request;
+
 Route::get('/hello', function () {
     return 'HELLO LARAVEL';
 });
@@ -6,10 +11,6 @@ Route::get('/hello', function () {
 Route::get('/ping', function () {
     return response()->json(['status' => 'ok']);
 });
-
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\JobController;
-use App\Http\Controllers\Api\AuthController;
 
 Route::middleware('auth:sanctum')->group(function () {
     // LIST JOBS

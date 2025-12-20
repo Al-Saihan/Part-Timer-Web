@@ -64,7 +64,7 @@ class JobController extends Controller
         $application = JobApplication::create([
             'job_id' => $id,
             'seeker_id' => $validated['seeker_id'],
-            'STATUS' => 'pending'
+            'status' => 'pending'
         ]);
 
         return response()->json(['message' => 'Applied successfully', 'application' => $application]);
@@ -86,8 +86,8 @@ class JobController extends Controller
     {
         $applications = JobApplication::where('seeker_id', $request->user()->id)
             ->with(['job:id,title,description,difficulty,working_hours,payment,created_at,updated_at'])
-            ->latest('applied_at')
-            ->get(['id','job_id','seeker_id','STATUS','applied_at']);
+            ->latest('created_at')
+            ->get(['id','job_id','seeker_id','status','created_at']);
 
         return response()->json($applications);
     }
@@ -99,9 +99,32 @@ class JobController extends Controller
             $query->where('recruiter_id', $request->user()->id);
         })
         ->with(['seeker:id,name,email,created_at', 'job:id,title'])
-        ->latest('applied_at')
+        ->latest('created_at')
         ->get();
         
         return response()->json($applicants);
+    }
+
+    // UPDATE AN APPLICATION STATUS (recruiter only)
+    public function updateApplicationStatus($id, Request $request)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:accepted,rejected,pending'
+        ]);
+
+        $application = JobApplication::with('job')->find($id);
+        if (! $application) {
+            return response()->json(['message' => 'Application not found'], 404);
+        }
+
+        // Ensure the authenticated user is the job's recruiter
+        if ($application->job->recruiter_id !== $request->user()->id) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $application->status = $validated['status'];
+        $application->save();
+
+        return response()->json(['success' => true, 'application' => $application]);
     }
 }

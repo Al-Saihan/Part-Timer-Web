@@ -12,7 +12,7 @@ class JobApplication extends Model
     protected $fillable = [
         'job_id',
         'seeker_id',
-        'STATUS'
+        'status'
     ];
 
     public function job()
