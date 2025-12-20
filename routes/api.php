@@ -34,6 +34,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // GET AUTHENTICATED USER
     Route::get('/me', fn (Request $req) => $req->user());
     
+    // UPDATE APPLICATION STATUS (recruiter)
+    Route::patch('/applications/{id}/status', [JobController::class, 'updateApplicationStatus']);
+    
     // LOGOUT
     Route::post('/logout', [AuthController::class, 'logout']);
 });
@@ -41,3 +44,5 @@ Route::middleware('auth:sanctum')->group(function () {
 // AUTH ROUTES
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/password/forgot', [AuthController::class, 'forgotPassword']);
+Route::post('/password/reset', [AuthController::class, 'resetPassword']);

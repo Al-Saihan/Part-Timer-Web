@@ -68,5 +68,39 @@ class AuthController extends Controller
         ]);
     }
 
+    // FORGOT PASSWORD - verify email exists
+    public function forgotPassword(Request $request)
+    {
+        $data = $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        $user = User::where('email', $data['email'])->first();
+        if (! $user) {
+            return response()->json(['message' => 'Email not found'], 404);
+        }
+
+        return response()->json(['message' => 'Email found, proceed to reset']);
+    }
+
+    // RESET PASSWORD - change password by email (no token)
+    public function resetPassword(Request $request)
+    {
+        $data = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|min:6|confirmed'
+        ]);
+
+        $user = User::where('email', $data['email'])->first();
+        if (! $user) {
+            return response()->json(['message' => 'Email not found'], 404);
+        }
+
+        $user->password = Hash::make($data['password']);
+        $user->save();
+
+        return response()->json(['success' => true, 'message' => 'Password updated']);
+    }
+
 
 }
