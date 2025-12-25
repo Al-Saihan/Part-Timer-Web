@@ -20,14 +20,14 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Rahim Ahmed', 'email' => 'rahim@example.com', 'password' => Hash::make('password'), 'user_type' => 'recruiter', 'bio' => 'Experienced recruiter in Dhaka region', 'location' => 'Dhaka', 'avg_rating' => 0, 'rating_count' => 0, 'created_at' => $now, 'updated_at' => $now],
             ['name' => 'Karim Hossain', 'email' => 'karim@example.com', 'password' => Hash::make('password'), 'user_type' => 'recruiter', 'bio' => 'Small business owner hiring part-timers', 'location' => 'Chittagong', 'avg_rating' => 0, 'rating_count' => 0, 'created_at' => $now, 'updated_at' => $now],
             ['name' => 'Selim Khan', 'email' => 'selim@example.com', 'password' => Hash::make('password'), 'user_type' => 'recruiter', 'bio' => 'Freelance project coordinator', 'location' => 'Rajshahi', 'avg_rating' => 0, 'rating_count' => 0, 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'Mitu Akter', 'email' => 'mitu@example.com', 'password' => Hash::make('password'), 'user_type' => 'seeker', 'bio' => 'University student available evenings', 'location' => 'Dhaka', 'avg_rating' => 0, 'rating_count' => 0, 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'Rana Sultana', 'email' => 'rana@example.com', 'password' => Hash::make('password'), 'user_type' => 'seeker', 'bio' => 'Home-based worker with admin skills', 'location' => 'Sylhet', 'avg_rating' => 0, 'rating_count' => 0, 'created_at' => $now, 'updated_at' => $now],
+            ['name' => 'Mitu Akter', 'email' => 'mitu@example.com', 'password' => Hash::make('password'), 'user_type' => 'seeker', 'bio' => 'University student available evenings', 'location' => 'Dhaka', 'skills' => 'tutoring, data entry, ms office', 'avg_rating' => 0, 'rating_count' => 0, 'created_at' => $now, 'updated_at' => $now],
+            ['name' => 'Rana Sultana', 'email' => 'rana@example.com', 'password' => Hash::make('password'), 'user_type' => 'seeker', 'bio' => 'Home-based worker with admin skills', 'location' => 'Sylhet', 'skills' => 'administration, ms office, customer support', 'avg_rating' => 0, 'rating_count' => 0, 'created_at' => $now, 'updated_at' => $now],
         ];
 
         // Assign a randomized profile_pic for each user in the format
         // "Avatars Set Flat Style-XX" where XX is 01..50
         foreach ($users as &$u) {
-            $u['profile_pic'] = 'Avatars Set Flat Style-' . str_pad(rand(1, 50), 2, '0', STR_PAD_LEFT);
+            $u['profile_pic'] = 'Avatars Set Flat Style-' . rand(1, 50);
         }
         unset($u);
 
