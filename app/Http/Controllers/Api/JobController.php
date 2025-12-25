@@ -12,7 +12,8 @@ class JobController extends Controller
     // LIST ALL JOBS
     public function index(Request $request)
     {
-        $query = Job::select('id', 'title', 'description', 'difficulty', 'working_hours', 'payment');
+        $query = Job::select('id', 'title', 'location', 'description', 'difficulty', 'working_hours', 'payment', 'recruiter_id')
+            ->with('recruiter:id,name,bio,location,avg_rating,rating_count,profile_pic');
         
         // If user is authenticated, exclude jobs they've already applied to
         if ($request->user()) {
@@ -33,6 +34,7 @@ class JobController extends Controller
         $request->validate([
             'recruiter_id' => 'required|integer',
             'title' => 'required|string',
+            'location' => 'nullable|string',
             'description' => 'required|string',
             'difficulty' => 'required|in:easy,medium,hard',
             'working_hours' => 'required|integer',
@@ -40,6 +42,8 @@ class JobController extends Controller
         ]);
 
         $job = Job::create($request->all());
+        // include recruiter data in the response (selected fields only)
+        $job->load('recruiter:id,name,bio,location');
 
         return response()->json([
             'success' => true,
@@ -74,6 +78,7 @@ class JobController extends Controller
     public function getPostedJobs(Request $request)
     {
         $jobs = Job::where('recruiter_id', $request->user()->id)
+            ->with('recruiter:id,name,bio,location,avg_rating,rating_count,profile_pic')
             ->withCount('applications')
             ->latest()
             ->get();
@@ -85,7 +90,10 @@ class JobController extends Controller
     public function getAppliedJobs(Request $request)
     {
         $applications = JobApplication::where('seeker_id', $request->user()->id)
-            ->with(['job:id,title,description,difficulty,working_hours,payment,created_at,updated_at'])
+            ->with([
+                'job:id,title,location,description,difficulty,working_hours,payment,created_at,updated_at',
+                'job.recruiter:id,name,bio,location,avg_rating,rating_count,profile_pic'
+            ])
             ->latest('created_at')
             ->get(['id','job_id','seeker_id','status','created_at']);
 
@@ -98,7 +106,7 @@ class JobController extends Controller
         $applicants = JobApplication::whereHas('job', function($query) use ($request) {
             $query->where('recruiter_id', $request->user()->id);
         })
-        ->with(['seeker:id,name,email,created_at', 'job:id,title'])
+        ->with(['seeker:id,name,email,created_at', 'job:id,title', 'job.recruiter:id,name,bio,location,avg_rating,rating_count,profile_pic'])
         ->latest('created_at')
         ->get();
         
@@ -126,5 +134,33 @@ class JobController extends Controller
         $application->save();
 
         return response()->json(['success' => true, 'application' => $application]);
+    }
+
+    // UPDATE A JOB (recruiter) - allows updating location and other fields
+    public function update($id, Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'sometimes|string',
+            'location' => 'sometimes|nullable|string',
+            'description' => 'sometimes|string',
+            'difficulty' => 'sometimes|in:easy,medium,hard',
+            'working_hours' => 'sometimes|integer',
+            'payment' => 'sometimes|numeric',
+        ]);
+
+        $job = Job::find($id);
+        if (! $job) {
+            return response()->json(['message' => 'Job not found'], 404);
+        }
+
+        // Ensure the authenticated user is the job's recruiter
+        if ($job->recruiter_id !== $request->user()->id) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $job->fill($validated);
+        $job->save();
+
+        return response()->json(['success' => true, 'job' => $job]);
     }
 }

@@ -28,6 +28,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // CREATE JOB
     Route::post('/jobs', [JobController::class, 'store']);
 
+    // UPDATE JOB (recruiter) - partial update including location
+    Route::patch('/jobs/{id}', [JobController::class, 'update']);
+
     // APPLY TO JOB
     Route::post('/jobs/{id}/apply', [JobController::class, 'apply']);
 

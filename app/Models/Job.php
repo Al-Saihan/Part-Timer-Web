@@ -12,6 +12,7 @@ class Job extends Model
     protected $fillable = [
         'recruiter_id',
         'title',
+        'location',
         'description',
         'difficulty',
         'working_hours',
