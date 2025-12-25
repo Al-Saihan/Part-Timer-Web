@@ -119,5 +119,72 @@ class DatabaseSeeder extends Seeder
         }
 
         DB::table('job_applications')->insert($applications);
+
+        // ---------------------------
+        // 4️⃣ User Ratings (ensure at least 5 ratings received per user)
+        // ---------------------------
+        $allUserIds = $userIds; // inserted users
+        $allJobIds = $jobIds;
+
+        $ratingsToInsert = [];
+        $usedCombos = [];
+        foreach ($allUserIds as $ratedUserId) {
+            $existingCount = DB::table('user_ratings')->where('rated_user_id', $ratedUserId)->count();
+            $needed = max(0, 5 - $existingCount);
+            $attempts = 0;
+            while ($needed > 0 && $attempts < 50) {
+                $attempts++;
+                // pick a random rater that's not the same user
+                $possibleRaters = array_values(array_filter($allUserIds, function($id) use ($ratedUserId) { return $id !== $ratedUserId; }));
+                if (empty($possibleRaters)) break;
+                $raterId = $possibleRaters[array_rand($possibleRaters)];
+
+                // pick a random job
+                $jobId = $allJobIds[array_rand($allJobIds)];
+
+                // avoid duplicate unique (rater, rated_user, job)
+                $comboKey = $raterId . '-' . $ratedUserId . '-' . $jobId;
+                $exists = DB::table('user_ratings')
+                    ->where('rater_id', $raterId)
+                    ->where('rated_user_id', $ratedUserId)
+                    ->where('job_id', $jobId)
+                    ->exists();
+                if ($exists) continue;
+                if (isset($usedCombos[$comboKey])) continue;
+
+                $ratingsToInsert[] = [
+                    'rater_id' => $raterId,
+                    'rated_user_id' => $ratedUserId,
+                    'job_id' => $jobId,
+                    'rating' => rand(1,5),
+                    'review' => (rand(0,3) ? null : 'Seeded review'),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+
+                $needed--;
+                $usedCombos[$comboKey] = true;
+            }
+        }
+
+        if (! empty($ratingsToInsert)) {
+            DB::table('user_ratings')->insert($ratingsToInsert);
+        }
+
+        // Recalculate avg_rating and rating_count for all users
+        foreach ($allUserIds as $uid) {
+            $agg = DB::table('user_ratings')
+                ->where('rated_user_id', $uid)
+                ->selectRaw('AVG(rating) as avg_rating, COUNT(*) as rating_count')
+                ->first();
+
+            if ($agg && $agg->rating_count > 0) {
+                DB::table('users')->where('id', $uid)->update([
+                    'avg_rating' => round($agg->avg_rating, 2),
+                    'rating_count' => (int) $agg->rating_count,
+                    'updated_at' => $now,
+                ]);
+            }
+        }
     }
 }

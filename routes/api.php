@@ -31,6 +31,18 @@ Route::middleware('auth:sanctum')->group(function () {
     // UPDATE JOB (recruiter) - partial update including location
     Route::patch('/jobs/{id}', [JobController::class, 'update']);
 
+    // Create or update a rating for a user (authenticated)
+    Route::post('/ratings', [\App\Http\Controllers\Api\RatingController::class, 'store']);
+
+    // Ratings: eligible targets for current user
+    Route::get('/ratings/eligible', [\App\Http\Controllers\Api\RatingController::class, 'eligible']);
+
+    // Ratings created by current user
+    Route::get('/ratings/mine', [\App\Http\Controllers\Api\RatingController::class, 'mine']);
+
+    // Ratings about the current user
+    Route::get('/ratings/about-me', [\App\Http\Controllers\Api\RatingController::class, 'aboutMe']);
+
     // APPLY TO JOB
     Route::post('/jobs/{id}/apply', [JobController::class, 'apply']);
 
