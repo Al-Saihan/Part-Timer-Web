@@ -2,6 +2,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\JobController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ChatController;
 use Illuminate\Http\Request;
 
 Route::get('/hello', function () {
@@ -57,6 +58,25 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/user/skills', [AuthController::class, 'updateSkills']);
     Route::patch('/user/location', [AuthController::class, 'updateLocation']);
     Route::patch('/user/profile-pic', [AuthController::class, 'updateProfilePic']);
+    
+    // CHAT / MESSAGING ROUTES
+    // Get all chat rooms for authenticated user
+    Route::get('/chat/rooms', [ChatController::class, 'getChatRooms']);
+    
+    // Get or create a chat room with another user
+    Route::post('/chat/rooms', [ChatController::class, 'getOrCreateChatRoom']);
+    
+    // Get chat room details
+    Route::get('/chat/rooms/{roomId}', [ChatController::class, 'getChatRoomDetails']);
+    
+    // Get messages for a specific chat room
+    Route::get('/chat/rooms/{roomId}/messages', [ChatController::class, 'getMessages']);
+    
+    // Send a message in a chat room
+    Route::post('/chat/rooms/{roomId}/messages', [ChatController::class, 'sendMessage']);
+    
+    // Delete a message
+    Route::delete('/chat/rooms/{roomId}/messages/{messageId}', [ChatController::class, 'deleteMessage']);
     
     // LOGOUT
     Route::post('/logout', [AuthController::class, 'logout']);
