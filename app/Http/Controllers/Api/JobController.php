@@ -41,6 +41,25 @@ class JobController extends Controller
             'payment' => 'required|numeric',
         ]);
 
+        $difficulty = $request->input('difficulty');
+        $hours = (int) $request->input('working_hours');
+        $wage = (float) $request->input('payment');
+
+        $validation = $this->validateHourlyWage($difficulty, $hours, $wage);
+
+        // Hard rejection or below standard -> return validation result and do not create job
+        if ($validation['status'] !== 'ok') {
+            return response()->json([
+                'success' => false,
+                'validation' => $validation
+            ], 422);
+        }
+
+        // If authenticated, ensure recruiter_id matches authenticated user
+        if ($request->user() && $request->user()->id !== (int) $request->input('recruiter_id')) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
         $job = Job::create($request->all());
         // include recruiter data in the response (selected fields only)
         $job->load('recruiter:id,name,bio,location');
@@ -49,6 +68,75 @@ class JobController extends Controller
             'success' => true,
             'job' => $job
         ]);
+    }
+
+    private function getHoursMultiplier(int $hours_per_day): float
+    {
+        if ($hours_per_day <= 3) {
+            return 1.20;
+        } elseif ($hours_per_day <= 6) {
+            return 1.00;
+        } elseif ($hours_per_day <= 8) {
+            return 0.90;
+        }
+
+        return 0.80;
+    }
+
+    private function validateHourlyWage(string $job_difficulty, int $hours_per_day, float $hourly_wage): array
+    {
+        $MIN_ALLOWED_WAGE = 100;
+
+        $WAGE_STANDARDS = [
+            'easy' => ['min' => 100, 'max' => 150],
+            'medium' => ['min' => 200, 'max' => 400],
+            'hard' => ['min' => 500, 'max' => 1500],
+        ];
+
+        $result = [
+            'status' => '',
+            'recommended_min' => 0,
+            'recommended_max' => 0,
+            'message' => ''
+        ];
+
+        // Step 1: Hard rejection
+        if ($hourly_wage < $MIN_ALLOWED_WAGE) {
+            $result['status'] = 'rejected';
+            $result['message'] = 'Hourly wage below ৳100 is not allowed.';
+            return $result;
+        }
+
+        // Step 2: Get base standards
+        if (! isset($WAGE_STANDARDS[$job_difficulty])) {
+            $result['status'] = 'rejected';
+            $result['message'] = 'Unknown difficulty level.';
+            return $result;
+        }
+
+        $base_min = $WAGE_STANDARDS[$job_difficulty]['min'];
+        $base_max = $WAGE_STANDARDS[$job_difficulty]['max'];
+
+        // Step 3: Apply hours adjustment
+        $hours_multiplier = $this->getHoursMultiplier($hours_per_day);
+
+        $recommended_min = $base_min * $hours_multiplier;
+        $recommended_max = $base_max * $hours_multiplier;
+
+        $result['recommended_min'] = (int) round($recommended_min);
+        $result['recommended_max'] = (int) round($recommended_max);
+
+        // Step 4: Validate against recommended range
+        if ($hourly_wage < $recommended_min) {
+            $result['status'] = 'below_standard';
+            $result['message'] = 'Offered wage ৳' . $hourly_wage . '/hr is below recommended range (৳' . $result['recommended_min'] . '–৳' . $result['recommended_max'] . '/hr).';
+            return $result;
+        }
+
+        // Step 5: Wage is acceptable
+        $result['status'] = 'ok';
+        $result['message'] = 'Hourly wage meets recommended standards.';
+        return $result;
     }
 
     // APPLY TO JOB (seeker)
