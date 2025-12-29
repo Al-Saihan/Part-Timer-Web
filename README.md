@@ -96,12 +96,21 @@ php artisan serve
 
 Notes:
 - For production, build assets with `npm run build` and deploy compiled files.
-- Store secret values in environment variables and do not commit `.env`.
 
----
 
+## Screenshots
+
+Below are screenshots demonstrating the app UI and key flows. Images are stored in the `documentaiton/` folder.
+
+- Landing page: ![Landing page](documentaiton/LandingPage.png)
+- Sign-in page: ![Sign-in page](documentaiton/signinPage.png)
+- Job detail: ![Job detail](documentaiton/jobDetail.png)
+- Posted jobs (recruiter): ![Posted jobs](documentaiton/postedJobs.png)
+- Recruiter dashboard: ![Recruiter dashboard](documentaiton/recruiterDashboard.png)
+- Profile section: ![Profile section](documentaiton/profileSection.png)
+- Seeker extra profile: ![Seeker extra profile](documentaiton/seekerExtraProfileSection.png)
+- Ratings view: ![Ratings](documentaiton/ratings.png)
 ## Testing
-
 Run the test suite:
 
 ```bash
