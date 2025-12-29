@@ -13,6 +13,16 @@
             init() {
                 // 1. Check if we have a saved chat from a previous session
                 const savedChat = localStorage.getItem('last_active_chat');
+                // Debug: log CSRF and cookie state for 419 troubleshooting
+                try {
+                    console.debug('Inbox init — document.cookie:', document.cookie);
+                    console.debug('CSRF meta:', document.querySelector('meta[name=csrf-token]')?.getAttribute('content'));
+                    const __xsrf = document.cookie.match('(^|;)\\s*XSRF-TOKEN=([^;]+)');
+                    console.debug('XSRF-TOKEN cookie present:', !!__xsrf);
+                    console.debug('laravel_session cookie present:', /laravel_session=/.test(document.cookie));
+                } catch (e) {
+                    console.warn('Error while reading cookies/meta for debug', e);
+                }
                 
                 // 2. Priority: URL Parameter -> Stored Chat -> First Chat in list
                 if (!this.activeChat && savedChat) {
@@ -44,21 +54,24 @@
             async loadMessages(roomId) {
                 if (!roomId) return;
                 this.messagesLoading = true;
-                try {
-                    const res = await fetch('/inbox/' + roomId + '/messages?per_page=100');
-                    const data = await res.json();
-                    
-                    if (this.messages.length > 0 && data.messages.length > this.messages.length) {
-                        sessionStorage.setItem('inbox_refresh_idle', 0);
-                    }
+                    try {
+                        const res = await fetch('/inbox/' + roomId + '/messages?per_page=100', { credentials: 'same-origin' });
+                        const text = await res.text();
+                        let data = {};
+                        try { data = JSON.parse(text); } catch (err) { console.error('Non-JSON response', text); }
 
-                    this.messages = (data.messages || []).reverse();
-                    setTimeout(() => this.scrollToBottom(), 100);
-                } catch(e) {
-                    this.messages = [];
-                } finally {
-                    this.messagesLoading = false;
-                }
+                        if (this.messages.length > 0 && (data.messages || []).length > this.messages.length) {
+                            sessionStorage.setItem('inbox_refresh_idle', 0);
+                        }
+
+                        this.messages = ((data.messages || [])).reverse();
+                        setTimeout(() => this.scrollToBottom(), 100);
+                    } catch(e) {
+                        console.error('Failed to load messages', e);
+                        this.messages = [];
+                    } finally {
+                        this.messagesLoading = false;
+                    }
             },
 
             async sendMessage(roomId) {
@@ -68,20 +81,31 @@
                 
                 try {
                     const csrfToken = document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
+                    const xsrfMatch = document.cookie.match('(^|;)\\s*XSRF-TOKEN=([^;]+)');
+                    const xsrfToken = xsrfMatch ? decodeURIComponent(xsrfMatch[2]) : null;
+                    const headers = {'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken};
+                    if (xsrfToken) headers['X-XSRF-TOKEN'] = xsrfToken;
+
                     const res = await fetch('/inbox/' + roomId + '/message', {
                         method: 'POST',
-                        headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken},
+                        credentials: 'same-origin',
+                        headers,
                         body: JSON.stringify({ content: messageContent })
                     });
-                    const data = await res.json();
+                    const text = await res.text();
+                    let data = {};
+                    try { data = JSON.parse(text); } catch (err) { console.error('Non-JSON response', text); }
+
                     if (data.success) {
                         sessionStorage.setItem('inbox_refresh_idle', 0);
                         window.location.reload();
                     } else {
                         alert('Failed to send message');
+                        console.error('Send message response', data, text);
                         this.loading = false;
                     }
                 } catch(e) {
+                    console.error('Send message error', e);
                     this.loading = false;
                 }
             },
@@ -95,13 +119,23 @@
                 if (!confirm('Are you sure you want to delete this message?')) return;
                 try {
                     const csrfToken = document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
+                    const xsrfMatch = document.cookie.match('(^|;)\\s*XSRF-TOKEN=([^;]+)');
+                    const xsrfToken = xsrfMatch ? decodeURIComponent(xsrfMatch[2]) : null;
+                    const headers = {'X-CSRF-TOKEN': csrfToken};
+                    if (xsrfToken) headers['X-XSRF-TOKEN'] = xsrfToken;
+
                     const res = await fetch('/inbox/' + roomId + '/message/' + messageId, {
                         method: 'DELETE',
-                        headers: {'X-CSRF-TOKEN': csrfToken}
+                        credentials: 'same-origin',
+                        headers
                     });
-                    const data = await res.json();
+                    const text = await res.text();
+                    let data = {};
+                    try { data = JSON.parse(text); } catch (err) { console.error('Non-JSON response', text); }
                     if (data.success) {
                         this.messages = this.messages.filter(m => m.id !== messageId);
+                    } else {
+                        console.error('Delete message failed', data, text);
                     }
                 } catch(e) {
                     console.error('Failed to delete message', e);

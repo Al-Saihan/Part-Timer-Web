@@ -159,7 +159,3 @@ Key files:
 - Custom password reset: `app/Http/Controllers/Auth/PasswordResetController.php` and `resources/views/livewire/auth/forgot-password.blade.php`
 
 ---
-
-## License
-
-MIT
