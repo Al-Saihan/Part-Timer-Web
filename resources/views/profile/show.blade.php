@@ -1,14 +1,14 @@
 <x-layouts.app :title="__('Profile')">
     <div class="min-h-screen bg-gradient-to-br from-blue-100 via-blue-50 to-blue-200 py-12">
         <div class="max-w-4xl mx-auto px-4">
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-6 p-6">
+            @php
+                $userPic = $user->profile_pic ?? null;
+                if ($userPic && ! str_contains($userPic, '.')) { $userPic = $userPic . '.png'; }
+            @endphp
+            <div x-data="{ avatarModal: false, selectedAvatar: '{{ $userPic }}' }" class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-6 p-6">
                 <div class="flex items-center justify-between gap-6">
                     <div class="flex items-center gap-4">
-                        <div class="p-1 bg-white rounded-full shadow-lg">
-                            @php
-                                $userPic = $user->profile_pic ?? null;
-                                if ($userPic && ! str_contains($userPic, '.')) { $userPic = $userPic . '.png'; }
-                            @endphp
+                        <div class="p-1 bg-white rounded-full shadow-lg relative group cursor-pointer" @click="avatarModal = true">
                             @if($userPic && file_exists(public_path('avatars/' . $userPic)))
                                 <img src="{{ asset('avatars/' . $userPic) }}" alt="Profile" class="w-28 h-28 rounded-full object-cover border-4 border-white">
                             @elseif($user->profile_pic)
@@ -18,6 +18,9 @@
                                     {{ $user->initials() }}
                                 </div>
                             @endif
+                            <div class="absolute inset-0 rounded-full bg-black/45 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white font-semibold text-sm">
+                                Change Avatar
+                            </div>
                         </div>
                         <div>
                             <h2 class="text-2xl font-bold text-slate-900 tracking-tight">{{ $user->name }}</h2>
@@ -32,6 +35,43 @@
                                 </span>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div x-show="avatarModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center">
+                    <div class="fixed inset-0 bg-black/40" @click="avatarModal = false"></div>
+                    <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full mx-4 relative z-50 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold text-slate-900">Choose an Avatar</h3>
+                                <p class="text-sm text-slate-500">Pick one from the available set. Hover and click to select.</p>
+                            </div>
+                            <button type="button" @click="avatarModal = false" class="text-slate-400 hover:text-slate-600">
+                                <span class="sr-only">Close</span>
+                                &times;
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 mt-4 max-h-80 overflow-y-auto">
+                            @forelse($availableAvatars as $avatar)
+                                <button type="button" @click="selectedAvatar = '{{ $avatar }}'" class="relative border rounded-xl p-2 hover:border-blue-400 transition shadow-sm" :class="selectedAvatar === '{{ $avatar }}' ? 'ring-2 ring-blue-500 border-blue-200' : 'border-slate-200'">
+                                    <img src="{{ asset('avatars/' . $avatar) }}" alt="Avatar option" class="w-full rounded-lg object-cover">
+                                    <div class="absolute inset-0 rounded-xl bg-black/40 opacity-0 hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition">
+                                        Pick Avatar
+                                    </div>
+                                    <div x-show="selectedAvatar === '{{ $avatar }}'" class="absolute top-2 right-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full">Selected</div>
+                                </button>
+                            @empty
+                                <p class="text-sm text-slate-500">No avatars found in the avatars directory.</p>
+                            @endforelse
+                        </div>
+
+                        <form method="POST" action="{{ route('profile.avatar.update') }}" class="mt-6 flex justify-end gap-3">
+                            @csrf
+                            <input type="hidden" name="avatar" :value="selectedAvatar">
+                            <button type="button" class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50" @click="avatarModal = false">Cancel</button>
+                            <button type="submit" :disabled="!selectedAvatar" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-60">Save Avatar</button>
+                        </form>
                     </div>
                 </div>
             </div>

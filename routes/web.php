@@ -106,7 +106,12 @@ Route::get('/profile', function (\Illuminate\Http\Request $request) {
         $rejectedCount = (clone $applications)->where('status', 'rejected')->count();
     }
 
-    return view('profile.show', compact('user', 'appliedCount', 'acceptedCount', 'rejectedCount', 'postedJobsCount'));
+    $availableAvatars = collect(\Illuminate\Support\Facades\File::files(public_path('avatars')))
+        ->map(fn($file) => $file->getFilename())
+        ->filter(fn($name) => preg_match('/\.(png|jpe?g|gif)$/i', $name))
+        ->values();
+
+    return view('profile.show', compact('user', 'appliedCount', 'acceptedCount', 'rejectedCount', 'postedJobsCount', 'availableAvatars'));
 })->middleware(['auth', 'verified'])->name('profile.show');
 
 // Update skills (current user)
@@ -147,6 +152,26 @@ Route::post('/profile/bio', function (\Illuminate\Http\Request $request) {
 
     return back()->with('success', 'Bio updated successfully.');
 })->middleware(['auth', 'verified'])->name('profile.bio.update');
+
+// Update avatar (current user)
+Route::post('/profile/avatar', function (\Illuminate\Http\Request $request) {
+    $request->validate([
+        'avatar' => 'required|string|max:255'
+    ]);
+
+    $avatar = basename($request->input('avatar'));
+    $path = public_path('avatars/' . $avatar);
+
+    if (! file_exists($path)) {
+        return back()->with('error', 'Invalid avatar selection.');
+    }
+
+    $user = $request->user();
+    $user->profile_pic = $avatar;
+    $user->save();
+
+    return back()->with('success', 'Avatar updated successfully.');
+})->middleware(['auth', 'verified'])->name('profile.avatar.update');
 
 // Store Job
 Route::post('/jobs', function (\Illuminate\Http\Request $request) {
