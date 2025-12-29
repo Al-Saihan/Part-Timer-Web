@@ -194,7 +194,7 @@ class JobController extends Controller
         $applicants = JobApplication::whereHas('job', function($query) use ($request) {
             $query->where('recruiter_id', $request->user()->id);
         })
-        ->with(['seeker:id,name,email,created_at,bio,location,avg_rating,rating_count,profile_pic', 'job:id,title', 'job.recruiter:id,name,bio,location,avg_rating,rating_count,profile_pic'])
+        ->with(['seeker:id,name,email,created_at,bio,location,skills,avg_rating,rating_count,profile_pic', 'job:id,title', 'job.recruiter:id,name,bio,location,avg_rating,rating_count,profile_pic'])
         ->latest('created_at')
         ->get();
         

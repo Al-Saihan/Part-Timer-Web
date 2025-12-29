@@ -59,9 +59,19 @@
             <div class="bg-white rounded-lg p-6 mb-6">
                 <div class="flex items-center gap-4">
                     <!-- Profile Picture -->
-                    <div class="h-20 w-20 rounded-full bg-blue-200 flex items-center justify-center">
-                        <span class="text-2xl font-bold text-blue-900">JD</span>
-                    </div>
+                    @php
+                        $userPic = auth()->user()->profile_pic ?? null;
+                        if ($userPic && ! str_contains($userPic, '.')) {
+                            $userPic = $userPic . '.png';
+                        }
+                    @endphp
+                    @if($userPic && file_exists(public_path('avatars/'.$userPic)))
+                        <img src="{{ asset('avatars/'.$userPic) }}" alt="{{ auth()->user()->name }}" class="h-20 w-20 rounded-full object-cover" />
+                    @else
+                        <div class="h-20 w-20 rounded-full bg-blue-200 flex items-center justify-center">
+                            <span class="text-2xl font-bold text-blue-900">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</span>
+                        </div>
+                    @endif
 
                     <!-- User Details -->
                     <div>

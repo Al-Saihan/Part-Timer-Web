@@ -41,6 +41,14 @@ Route::get('/dashboard/recruiter', function (\Illuminate\Http\Request $request) 
     return view('dashboards.recruiter', compact('applicants'));
 })->middleware(['auth', 'verified'])->name('recruiter.dashboard');
 
+// Update application status (recruiter action)
+Route::post('/applications/{id}/status', function (\Illuminate\Http\Request $request, $id) {
+    $controller = new \App\Http\Controllers\Api\JobController();
+    return $controller->updateApplicationStatus($id, $request);
+})->middleware(['auth', 'verified'])->name('applications.update_status');
+
+// Avatars are now served directly from public/avatars (no route needed)
+
 // Posted Jobs (Recruiter)
 Route::get('/jobs/posted', function (\Illuminate\Http\Request $request) {
     $controller = new \App\Http\Controllers\Api\JobController();

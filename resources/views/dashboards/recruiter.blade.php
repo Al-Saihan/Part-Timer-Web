@@ -46,9 +46,19 @@
             <div class="bg-white rounded-lg p-6 mb-6">
                 <div class="flex items-center gap-4">
                     <!-- Profile Picture -->
-                    <div class="h-20 w-20 rounded-full bg-blue-200 flex items-center justify-center">
-                        <span class="text-2xl font-bold text-blue-900">JD</span>
-                    </div>
+                    @php
+                        $userPic = auth()->user()->profile_pic ?? null;
+                        if ($userPic && ! str_contains($userPic, '.')) {
+                            $userPic = $userPic . '.png';
+                        }
+                    @endphp
+                    @if($userPic && file_exists(public_path('avatars/'.$userPic)))
+                        <img src="{{ asset('avatars/'.$userPic) }}" alt="{{ auth()->user()->name }}" class="h-20 w-20 rounded-full object-cover" />
+                    @else
+                        <div class="h-20 w-20 rounded-full bg-blue-200 flex items-center justify-center">
+                            <span class="text-2xl font-bold text-blue-900">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</span>
+                        </div>
+                    @endif
 
                     <!-- User Details -->
                     <div>
@@ -77,9 +87,19 @@
                         <div class="flex justify-between items-start">
                             <div class="flex-1">
                                 <div class="flex items-center gap-3">
-                                    <div class="h-12 w-12 rounded-full bg-blue-200 flex items-center justify-center">
-                                        <span class="text-lg font-bold text-blue-900">{{ strtoupper(substr($seeker?->name ?? 'U', 0, 1)) }}</span>
-                                    </div>
+                                    @php
+                                        $seekerPic = $seeker?->profile_pic ?? null;
+                                        if ($seekerPic && ! str_contains($seekerPic, '.')) {
+                                            $seekerPic = $seekerPic . '.png';
+                                        }
+                                    @endphp
+                                    @if($seekerPic && file_exists(public_path('avatars/'.$seekerPic)))
+                                        <img src="{{ asset('avatars/'.$seekerPic) }}" alt="{{ $seeker?->name ?? 'User' }}" class="h-12 w-12 rounded-full object-cover" />
+                                    @else
+                                        <div class="h-12 w-12 rounded-full bg-blue-200 flex items-center justify-center">
+                                            <span class="text-lg font-bold text-blue-900">{{ strtoupper(substr($seeker?->name ?? 'U', 0, 1)) }}</span>
+                                        </div>
+                                    @endif
                                     <div>
                                         <h4 class="font-semibold text-blue-900">{{ $seeker?->name ?? 'Unknown User' }}</h4>
                                         <p class="text-blue-700 text-sm">{{ $seeker?->email ?? 'N/A' }}</p>
@@ -103,16 +123,130 @@
                             
                             <div class="flex gap-2">
                                 @if($status === 'pending')
-                                    <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
-                                        Accept
-                                    </button>
-                                    <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm">
-                                        Reject
-                                    </button>
+                                    <form action="{{ route('applications.update_status', $applicant->id) }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="status" value="accepted">
+                                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
+                                            Accept
+                                        </button>
+                                    </form>
+
+                                    <form action="{{ route('applications.update_status', $applicant->id) }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="status" value="rejected">
+                                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm">
+                                            Reject
+                                        </button>
+                                    </form>
                                 @endif
-                                <a href="#" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
-                                    View Profile
-                                </a>
+                                <div x-data="{
+                                        open: false,
+                                        submitting: false,
+                                        csrf: '{{ csrf_token() }}',
+                                        url: '{{ route('applications.update_status', $applicant->id) }}',
+                                        async submitStatus(status) {
+                                            if (this.submitting) return;
+                                            this.submitting = true;
+                                            try {
+                                                const fd = new FormData();
+                                                fd.append('_token', this.csrf);
+                                                fd.append('status', status);
+                                                const res = await fetch(this.url, { method: 'POST', body: fd, credentials: 'same-origin' });
+                                                if (!res.ok) throw new Error('Network error');
+                                                await res.json();
+                                                this.open = false;
+                                                location.reload();
+                                            } catch (e) {
+                                                console.error(e);
+                                                alert('Failed to update status.');
+                                            } finally {
+                                                this.submitting = false;
+                                            }
+                                        }
+                                    }" class="relative">
+                                    <button @click="open = true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+                                        View Application
+                                    </button>
+
+                                    <!-- Modal -->
+                                    <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center">
+                                        <div class="fixed inset-0 bg-black/40" @click="open = false"></div>
+
+                                        <div class="bg-white rounded-lg max-w-2xl w-full mx-4 z-50 overflow-auto" @keydown.window.escape="open = false">
+                                            <div class="p-6">
+                                                <div class="flex items-start gap-4">
+                                                    @php
+                                                        $modalSeeker = $seeker;
+                                                        $modalSeekerPic = $seeker?->profile_pic ?? null;
+                                                        if ($modalSeekerPic && ! str_contains($modalSeekerPic, '.')) {
+                                                            $modalSeekerPic = $modalSeekerPic . '.png';
+                                                        }
+                                                    @endphp
+                                                    @if($modalSeekerPic && file_exists(public_path('avatars/'.$modalSeekerPic)))
+                                                        <img src="{{ asset('avatars/'.$modalSeekerPic) }}" alt="{{ $seeker?->name ?? 'User' }}" class="h-24 w-24 rounded-full object-cover" />
+                                                    @else
+                                                        <div class="h-24 w-24 rounded-full bg-blue-200 flex items-center justify-center">
+                                                            <span class="text-2xl font-bold text-blue-900">{{ strtoupper(substr($seeker?->name ?? 'U', 0, 1)) }}</span>
+                                                        </div>
+                                                    @endif
+
+                                                    <div class="flex-1">
+                                                        <h3 class="text-xl font-semibold text-blue-900">{{ $seeker?->name ?? 'Unknown' }}</h3>
+                                                        <p class="text-sm text-blue-700">{{ $seeker?->email ?? 'N/A' }}</p>
+                                                        <div class="mt-2 text-sm text-blue-600">Applied for: <span class="font-medium text-blue-800">{{ $job?->title ?? 'Job' }}</span></div>
+                                                        <div class="mt-1 text-sm text-blue-500">Status: <span class="font-medium">{{ ucfirst($status) }}</span></div>
+                                                        <div class="mt-1 text-sm text-blue-500">Applied {{ \Carbon\Carbon::parse($applicant->applied_at ?? $applicant->created_at ?? now())->diffForHumans() }}</div>
+                                                    </div>
+                                                </div>
+
+                                                <hr class="my-4">
+
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
+                                                    <div>
+                                                        <p class="font-semibold">Bio</p>
+                                                        <p class="text-blue-600">{{ $seeker?->bio ?? 'No bio available.' }}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p class="font-semibold">Location</p>
+                                                        <p class="text-blue-600">{{ $seeker?->location ?? 'N/A' }}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p class="font-semibold">Skills</p>
+                                                        @php
+                                                            $rawSkills = $seeker?->skills ?? '';
+                                                            $skills = collect(array_filter(array_map('trim', explode(',', $rawSkills))))->values();
+                                                        @endphp
+                                                        @if($skills->isEmpty())
+                                                            <p class="text-blue-600">N/A</p>
+                                                        @else
+                                                            <div class="flex flex-wrap gap-2">
+                                                                @foreach($skills as $skill)
+                                                                    <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">{{ $skill }}</span>
+                                                                @endforeach
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                    <div>
+                                                        <p class="font-semibold">Ratings</p>
+                                                        <p class="text-blue-600">{{ $seeker?->avg_rating ?? '0.00' }} ({{ $seeker?->rating_count ?? 0 }} reviews)</p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mt-6 flex gap-3">
+                                                    <a href="mailto:{{ $seeker?->email ?? '' }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded text-sm">Contact</a>
+
+                                                    <button @click.prevent="submitStatus('accepted')" :disabled="submitting" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">Accept</button>
+
+                                                    <button @click.prevent="submitStatus('rejected')" :disabled="submitting" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm">Reject</button>
+
+                                                    <button @click.prevent="submitStatus('pending')" :disabled="submitting" class="bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-4 py-2 rounded text-sm">Hold</button>
+
+                                                    <button @click="open = false" class="ml-auto bg-white border border-blue-200 text-blue-700 px-4 py-2 rounded text-sm">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
