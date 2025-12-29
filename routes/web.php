@@ -32,6 +32,11 @@ Route::get('/dashboard/seeker', function () {
     return view('dashboards.seeker', compact('jobs'));
 })->middleware(['auth', 'verified'])->name('seeker.dashboard');
 
+// Seeker Inbox (make-do placeholder)
+Route::get('/dashboard/seeker/inbox', function () {
+    return view('seeker.inbox');
+})->middleware(['auth', 'verified'])->name('seeker.inbox');
+
 // Recruiter Dashboard
 Route::get('/dashboard/recruiter', function (\Illuminate\Http\Request $request) {
     $controller = new \App\Http\Controllers\Api\JobController();
@@ -73,6 +78,75 @@ Route::get('/jobs/applied', function (\Illuminate\Http\Request $request) {
 Route::get('/jobs/create', function () {
     return view('jobs.create');
 })->middleware(['auth', 'verified'])->name('jobs.create');
+
+// User Profile (current user)
+Route::get('/profile', function (\Illuminate\Http\Request $request) {
+    $user = $request->user();
+
+    // Common data
+    $appliedCount = 0;
+    $acceptedCount = 0;
+    $rejectedCount = 0;
+    $postedJobsCount = 0;
+
+    if ($user->user_type === 'seeker') {
+        $appliedCount = \App\Models\JobApplication::where('seeker_id', $user->id)->count();
+        $acceptedCount = \App\Models\JobApplication::where('seeker_id', $user->id)->where('status', 'accepted')->count();
+        $rejectedCount = \App\Models\JobApplication::where('seeker_id', $user->id)->where('status', 'rejected')->count();
+    } elseif ($user->user_type === 'recruiter') {
+        $postedJobsCount = \App\Models\Job::where('recruiter_id', $user->id)->count();
+
+        // Applications to this recruiter's jobs
+        $applications = \App\Models\JobApplication::whereHas('job', function($q) use ($user) {
+            $q->where('recruiter_id', $user->id);
+        });
+
+        $appliedCount = $applications->count();
+        $acceptedCount = (clone $applications)->where('status', 'accepted')->count();
+        $rejectedCount = (clone $applications)->where('status', 'rejected')->count();
+    }
+
+    return view('profile.show', compact('user', 'appliedCount', 'acceptedCount', 'rejectedCount', 'postedJobsCount'));
+})->middleware(['auth', 'verified'])->name('profile.show');
+
+// Update skills (current user)
+Route::post('/profile/skills', function (\Illuminate\Http\Request $request) {
+    $request->validate([
+        'skills' => 'nullable|string|max:1000'
+    ]);
+
+    $user = $request->user();
+    $user->skills = $request->input('skills');
+    $user->save();
+
+    return back()->with('success', 'Skills updated successfully.');
+})->middleware(['auth', 'verified'])->name('profile.skills.update');
+
+// Update location (current user)
+Route::post('/profile/location', function (\Illuminate\Http\Request $request) {
+    $request->validate([
+        'location' => 'nullable|string|max:255'
+    ]);
+
+    $user = $request->user();
+    $user->location = $request->input('location');
+    $user->save();
+
+    return back()->with('success', 'Location updated successfully.');
+})->middleware(['auth', 'verified'])->name('profile.location.update');
+
+// Update bio (current user)
+Route::post('/profile/bio', function (\Illuminate\Http\Request $request) {
+    $request->validate([
+        'bio' => 'nullable|string|max:2000'
+    ]);
+
+    $user = $request->user();
+    $user->bio = $request->input('bio');
+    $user->save();
+
+    return back()->with('success', 'Bio updated successfully.');
+})->middleware(['auth', 'verified'])->name('profile.bio.update');
 
 // Store Job
 Route::post('/jobs', function (\Illuminate\Http\Request $request) {
