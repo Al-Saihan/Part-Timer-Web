@@ -93,23 +93,21 @@
                                 </div>
                             </div>
                             
-                            <div class="flex gap-2">
+                            <div x-data="{ submitting: false, csrf: '{{ csrf_token() }}', submitStatus: async function(url, status) { if (this.submitting) return; this.submitting = true; try { const fd = new FormData(); fd.append('_token', this.csrf); fd.append('status', status); const res = await fetch(url, { method: 'POST', body: fd, credentials: 'same-origin' }); if (!res.ok) throw new Error('Network error'); const ct = res.headers.get('content-type') || ''; if (ct.includes('application/json')) await res.json(); location.reload(); } catch (e) { console.error(e); alert('Failed to update status.'); } finally { this.submitting = false; } } }" class="flex gap-2">
                                 @if($status === 'pending')
-                                    <form action="{{ route('applications.update_status', $applicant->id) }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="status" value="accepted">
-                                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
-                                            Accept
-                                        </button>
-                                    </form>
+                                    <button @click.prevent="submitStatus('{{ route('applications.update_status', $applicant->id) }}', 'accepted')" :disabled="submitting" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
+                                        Accept
+                                    </button>
 
-                                    <form action="{{ route('applications.update_status', $applicant->id) }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="status" value="rejected">
-                                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm">
-                                            Reject
-                                        </button>
-                                    </form>
+                                    <button @click.prevent="submitStatus('{{ route('applications.update_status', $applicant->id) }}', 'rejected')" :disabled="submitting" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm">
+                                        Reject
+                                    </button>
+
+                                @else
+                                    <div class="flex items-center">
+                                        <span class="text-sm text-gray-700 px-3 py-1 rounded bg-gray-100">Application already processed!</span>
+                                    </div>
+
                                 @endif
                                 <div x-data="{
                                         open: false,
