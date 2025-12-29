@@ -1,5 +1,5 @@
 <x-layouts.app :title="__('Posted Jobs')">
-    <div class="min-h-screen bg-slate-50">
+    <div class="min-h-screen bg-gradient-to-br from-blue-100 via-blue-50 to-blue-200">
         <div class="max-w-7xl mx-auto px-4 py-8">
             @if(session('success'))
                 <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
@@ -10,7 +10,7 @@
 
             <div class="flex justify-between items-end mb-8">
                 <div>
-                    <h2 class="text-2xl font-bold text-slate-900">Management Console</h2>
+                    <h2 class="text-2xl font-bold text-slate-900">Your Posted Jobs</h2>
                     <p class="text-slate-500 text-sm">Review applications and manage your active listings</p>
                 </div>
                 <a href="{{ route('jobs.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-blue-100 transition-all active:scale-95">
