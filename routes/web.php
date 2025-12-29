@@ -33,9 +33,34 @@ Route::get('/dashboard/seeker', function () {
 })->middleware(['auth', 'verified'])->name('seeker.dashboard');
 
 // Inbox (shared)
-Route::get('/inbox', function () {
-    return view('inbox');
+Route::get('/inbox', function (\Illuminate\Http\Request $request) {
+    $user = $request->user();
+    $controller = new \App\Http\Controllers\Api\ChatController();
+    $response = $controller->getChatRooms($request);
+    $data = json_decode($response->getContent(), true);
+
+    $chatRooms = $data['chat_rooms'] ?? [];
+
+    return view('inbox', compact('user', 'chatRooms'));
 })->middleware(['auth', 'verified'])->name('inbox');
+
+// Inbox: Get messages
+Route::get('/inbox/{roomId}/messages', function (\Illuminate\Http\Request $request, $roomId) {
+    $controller = new \App\Http\Controllers\Api\ChatController();
+    return $controller->getMessages($request, $roomId);
+})->middleware(['auth', 'verified']);
+
+// Inbox: Send message
+Route::post('/inbox/{roomId}/message', function (\Illuminate\Http\Request $request, $roomId) {
+    $controller = new \App\Http\Controllers\Api\ChatController();
+    return $controller->sendMessage($request, $roomId);
+})->middleware(['auth', 'verified'])->name('inbox.send-message');
+
+// Inbox: Delete message
+Route::delete('/inbox/{roomId}/message/{messageId}', function (\Illuminate\Http\Request $request, $roomId, $messageId) {
+    $controller = new \App\Http\Controllers\Api\ChatController();
+    return $controller->deleteMessage($request, $roomId, $messageId);
+})->middleware(['auth', 'verified'])->name('inbox.delete-message');
 
 // Ratings center
 Route::get('/ratings', function (\Illuminate\Http\Request $request) {

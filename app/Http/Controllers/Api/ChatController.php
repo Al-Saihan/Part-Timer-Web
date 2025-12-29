@@ -28,10 +28,29 @@ class ChatController extends Controller
             'latestMessage.sender'
         ])
         ->get()
-        ->map(function ($room) {
+        ->map(function ($room) use ($user) {
+            $otherParticipant = $room->participants->first();
+            $appliedJobs = [];
+            
+            if ($otherParticipant) {
+                // Get all jobs posted by current user that the other participant has applied to
+                $appliedJobs = \App\Models\JobApplication::where('seeker_id', $otherParticipant->id)
+                    ->whereHas('job', function ($query) use ($user) {
+                        $query->where('recruiter_id', $user->id);
+                    })
+                    ->with('job:id,title')
+                    ->latest()
+                    ->get()
+                    ->pluck('job.title')
+                    ->filter()
+                    ->values()
+                    ->toArray();
+            }
+            
             return [
                 'id' => $room->id,
-                'other_participant' => $room->participants->first(),
+                'other_participant' => $otherParticipant,
+                'applied_jobs' => $appliedJobs,
                 'latest_message' => $room->latestMessage ? [
                     'content' => $room->latestMessage->content,
                     'message_type' => $room->latestMessage->message_type,
