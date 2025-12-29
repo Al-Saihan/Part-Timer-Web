@@ -108,7 +108,7 @@
                                 
                                 <div class="mt-3 flex items-center gap-4 text-sm">
                                     <span class="text-blue-600">Applied for: <span class="font-medium">{{ $job?->title ?? 'Job' }}</span></span>
-                                    <span class="text-blue-500">{{ \Carbon\Carbon::parse($applicant->applied_at ?? now())->diffForHumans() }}</span>
+                                    <span class="text-blue-500">{{ \Carbon\Carbon::parse($applicant->applied_at ?? $applicant->created_at)->diffForHumans() }}</span>
                                 </div>
                                 
                                 <div class="mt-2">

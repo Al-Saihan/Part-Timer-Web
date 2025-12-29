@@ -47,8 +47,6 @@ Route::post('/applications/{id}/status', function (\Illuminate\Http\Request $req
     return $controller->updateApplicationStatus($id, $request);
 })->middleware(['auth', 'verified'])->name('applications.update_status');
 
-// Avatars are now served directly from public/avatars (no route needed)
-
 // Posted Jobs (Recruiter)
 Route::get('/jobs/posted', function (\Illuminate\Http\Request $request) {
     $controller = new \App\Http\Controllers\Api\JobController();
@@ -60,9 +58,10 @@ Route::get('/jobs/posted', function (\Illuminate\Http\Request $request) {
 
 // Applied Jobs (Seeker)
 Route::get('/jobs/applied', function (\Illuminate\Http\Request $request) {
-    $controller = new \App\Http\Controllers\Api\JobController();
-    $response = $controller->getAppliedJobs($request);
-    $applications = json_decode($response->getContent());
+    $applications = \App\Models\JobApplication::where('seeker_id', auth()->id())
+        ->with(['job' => function($q) { $q->with('recruiter'); }])
+        ->latest('created_at')
+        ->get();
 
     return view('jobs.applied', compact('applications'));
 })->middleware(['auth', 'verified'])->name('jobs.applied');
