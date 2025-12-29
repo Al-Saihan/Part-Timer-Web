@@ -56,6 +56,20 @@ Route::post('/inbox/{roomId}/message', function (\Illuminate\Http\Request $reque
     return $controller->sendMessage($request, $roomId);
 })->middleware(['auth', 'verified'])->name('inbox.send-message');
 
+// Inbox: Start chat with specific user and redirect into room
+Route::get('/inbox/start/{otherUserId}', function (\Illuminate\Http\Request $request, $otherUserId) {
+    $request->merge(['other_user_id' => $otherUserId]);
+    $controller = new \App\Http\Controllers\Api\ChatController();
+    $response = $controller->getOrCreateChatRoom($request);
+    $data = json_decode($response->getContent(), true);
+
+    if (($data['success'] ?? false) && isset($data['chat_room']['id'])) {
+        return redirect()->route('inbox', ['room' => $data['chat_room']['id']]);
+    }
+
+    return redirect()->route('inbox')->with('error', 'Unable to start chat.');
+})->middleware(['auth', 'verified'])->name('inbox.start-chat');
+
 // Inbox: Delete message
 Route::delete('/inbox/{roomId}/message/{messageId}', function (\Illuminate\Http\Request $request, $roomId, $messageId) {
     $controller = new \App\Http\Controllers\Api\ChatController();

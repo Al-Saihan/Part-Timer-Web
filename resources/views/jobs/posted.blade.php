@@ -70,6 +70,7 @@
                             $seeker = $app->seeker ?? null;
                             $applicantsArr[] = [
                                 'id' => $app->id,
+                                'seeker_id' => $app->seeker_id,
                                 'name' => $seeker->name ?? 'Unknown',
                                 'email' => $seeker->user->email ?? 'N/A',
                                 'bio' => $seeker->bio ?? '',
@@ -239,7 +240,7 @@
                             </div>
 
                             <div class="mt-8 flex gap-3">
-                                <a :href="'mailto:' + selectedApplicant.email" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-2.5 rounded-xl text-sm font-bold transition-colors">Contact</a>
+                                <a :href="'/inbox/start/' + selectedApplicant.seeker_id" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-2.5 rounded-xl text-sm font-bold transition-colors">Contact</a>
                                 
                                 <button @click="updateStatus(selectedApplicant.id, 'accepted')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-100">Accept</button>
                                 

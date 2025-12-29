@@ -203,7 +203,7 @@
                                                 </div>
 
                                                 <div class="mt-6 flex gap-3">
-                                                    <a href="mailto:{{ $seeker?->email ?? '' }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded text-sm">Contact</a>
+                                                    <a href="{{ route('inbox.start-chat', $seeker?->id ?? 0) }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded text-sm">Contact</a>
 
                                                     <button @click.prevent="submitStatus('accepted')" :disabled="submitting" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">Accept</button>
 

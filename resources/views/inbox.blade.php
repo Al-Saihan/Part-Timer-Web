@@ -1,42 +1,70 @@
 <x-layouts.app :title="__('Inbox')">
     <div class="flex h-[calc(100vh-64px)] bg-gradient-to-br from-blue-100 via-blue-50 to-blue-200 overflow-hidden" 
         x-data="{ 
-            activeChat: {{ count($chatRooms) > 0 ? ($chatRooms[0]['id'] ?? 0) : 0 }},
+            activeChat: {{ request('room') ? (int) request('room') : 0 }},
             currentUserId: {{ $user->id }},
             chats: {{ json_encode($chatRooms) }},
             messages: [],
             messagesLoading: false,
             newMessage: '',
             loading: false,
+            refreshCount: parseInt(sessionStorage.getItem('inbox_refresh_idle') || 0),
+
+            init() {
+                // 1. Check if we have a saved chat from a previous session
+                const savedChat = localStorage.getItem('last_active_chat');
+                
+                // 2. Priority: URL Parameter -> Stored Chat -> First Chat in list
+                if (!this.activeChat && savedChat) {
+                    this.activeChat = parseInt(savedChat);
+                } else if (!this.activeChat && this.chats.length > 0) {
+                    this.activeChat = this.chats[0].id;
+                }
+
+                if (this.activeChat) {
+                    this.loadMessages(this.activeChat);
+                }
+                
+                // Auto-refresh logic (Every 20 seconds)
+                if (this.refreshCount < 5) {
+                    setTimeout(() => {
+                        sessionStorage.setItem('inbox_refresh_idle', this.refreshCount + 1);
+                        window.location.reload();
+                    }, 20000);
+                }
+            },
+
+            // Helper to switch chats and save state
+            switchChat(roomId) {
+                this.activeChat = roomId;
+                localStorage.setItem('last_active_chat', roomId);
+                this.loadMessages(roomId);
+            },
+
             async loadMessages(roomId) {
                 if (!roomId) return;
                 this.messagesLoading = true;
                 try {
                     const res = await fetch('/inbox/' + roomId + '/messages?per_page=100');
                     const data = await res.json();
+                    
+                    if (this.messages.length > 0 && data.messages.length > this.messages.length) {
+                        sessionStorage.setItem('inbox_refresh_idle', 0);
+                    }
+
                     this.messages = (data.messages || []).reverse();
                     setTimeout(() => this.scrollToBottom(), 100);
                 } catch(e) {
-                    console.error('Failed to load messages', e);
                     this.messages = [];
                 } finally {
                     this.messagesLoading = false;
                 }
             },
+
             async sendMessage(roomId) {
                 if (!this.newMessage.trim() || this.loading) return;
                 this.loading = true;
                 const messageContent = this.newMessage;
-                
-                const optimisticMsg = {
-                    id: 'temp-' + Date.now(),
-                    sender_id: this.currentUserId,
-                    content: messageContent,
-                    created_at: new Date().toISOString()
-                };
-                this.messages.push(optimisticMsg);
-                this.newMessage = '';
-                setTimeout(() => this.scrollToBottom(), 50);
                 
                 try {
                     const csrfToken = document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
@@ -47,25 +75,24 @@
                     });
                     const data = await res.json();
                     if (data.success) {
-                        const idx = this.messages.findIndex(m => m.id === optimisticMsg.id);
-                        if (idx !== -1) this.messages[idx] = data.message;
+                        sessionStorage.setItem('inbox_refresh_idle', 0);
+                        window.location.reload();
                     } else {
-                        this.messages = this.messages.filter(m => m.id !== optimisticMsg.id);
                         alert('Failed to send message');
+                        this.loading = false;
                     }
                 } catch(e) {
-                    this.messages = this.messages.filter(m => m.id !== optimisticMsg.id);
-                } finally {
                     this.loading = false;
                 }
             },
+
             scrollToBottom() {
                 const msgContainer = document.querySelector('[data-messages-container]');
                 if (msgContainer) msgContainer.scrollTop = msgContainer.scrollHeight;
             },
+
             async deleteMessage(roomId, messageId) {
                 if (!confirm('Are you sure you want to delete this message?')) return;
-                
                 try {
                     const csrfToken = document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
                     const res = await fetch('/inbox/' + roomId + '/message/' + messageId, {
@@ -75,25 +102,24 @@
                     const data = await res.json();
                     if (data.success) {
                         this.messages = this.messages.filter(m => m.id !== messageId);
-                    } else {
-                        alert('Failed to delete message');
                     }
                 } catch(e) {
                     console.error('Failed to delete message', e);
-                    alert('Error deleting message');
                 }
             }
-        }" x-init="loadMessages(activeChat)">
+        }">
         
         <div class="w-80 md:w-96 border-r border-blue-200/50 flex flex-col bg-white/30 backdrop-blur-md">
             <div class="p-6 border-b border-blue-200/30">
                 <div class="flex items-center justify-between">
                     <h2 class="text-2xl font-black text-blue-950 tracking-tight">Inbox</h2>
-                    <button onclick="window.location.reload()" class="p-2 hover:bg-blue-100/50 rounded-lg transition-colors" title="Refresh">
-                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                        </svg>
-                    </button>
+                    
+                    <template x-if="refreshCount >= 5">
+                        <button onclick="sessionStorage.setItem('inbox_refresh_idle', 0); window.location.reload();" 
+                            class="text-[10px] bg-blue-600 text-white px-2 py-1 rounded-lg font-black uppercase tracking-tighter animate-pulse shadow-lg">
+                            Refresh to update
+                        </button>
+                    </template>
                 </div>
                 <div class="mt-4">
                     <input type="text" placeholder="Search messages..." 
@@ -109,7 +135,7 @@
                         $userPic = $otherUser['profile_pic'] ?? null;
                         if ($userPic && ! str_contains($userPic, '.')) { $userPic = $userPic . '.png'; }
                     @endphp
-                    <button @click="activeChat = {{ $chat['id'] }}; loadMessages({{ $chat['id'] }})" 
+                    <button @click="switchChat({{ $chat['id'] }})" 
                         :class="activeChat === {{ $chat['id'] }} ? 'bg-white/60 shadow-sm ring-1 ring-blue-200/50' : 'hover:bg-white/20'"
                         class="w-full text-left px-6 py-5 transition-all flex items-center gap-4 border-b border-blue-100/20 relative">
                         
