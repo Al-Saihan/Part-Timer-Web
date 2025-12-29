@@ -16,7 +16,8 @@
                         @elseif(auth()->user()->user_type === 'recruiter')
                             <a href="{{ route('jobs.posted') }}" class="text-blue-900 hover:text-blue-700 text-sm {{ request()->routeIs('jobs.posted') ? 'text-blue-700 font-semibold border-b-2 border-blue-700 pb-1' : '' }}">Posted Jobs</a>
                         @endif
-                        <a href="{{ route('seeker.inbox') }}" class="text-blue-900 hover:text-blue-700 text-sm {{ request()->routeIs('seeker.inbox') ? 'text-blue-700 font-semibold border-b-2 border-blue-700 pb-1' : '' }}">Inbox</a>
+                        <a href="{{ route('inbox') }}" class="text-blue-900 hover:text-blue-700 text-sm {{ request()->routeIs('inbox') ? 'text-blue-700 font-semibold border-b-2 border-blue-700 pb-1' : '' }}">Inbox</a>
+                        <a href="{{ route('ratings.index') }}" class="text-blue-900 hover:text-blue-700 text-sm {{ request()->routeIs('ratings.index') ? 'text-blue-700 font-semibold border-b-2 border-blue-700 pb-1' : '' }}">Ratings</a>
 
                         <!-- Profile Dropdown -->
                         <div class="relative" x-data="{ open: false }">

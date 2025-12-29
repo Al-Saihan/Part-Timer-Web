@@ -32,10 +32,102 @@ Route::get('/dashboard/seeker', function () {
     return view('dashboards.seeker', compact('jobs'));
 })->middleware(['auth', 'verified'])->name('seeker.dashboard');
 
-// Seeker Inbox (make-do placeholder)
-Route::get('/dashboard/seeker/inbox', function () {
-    return view('seeker.inbox');
-})->middleware(['auth', 'verified'])->name('seeker.inbox');
+// Inbox (shared)
+Route::get('/inbox', function () {
+    return view('inbox');
+})->middleware(['auth', 'verified'])->name('inbox');
+
+// Ratings center
+Route::get('/ratings', function (\Illuminate\Http\Request $request) {
+    $user = $request->user();
+
+    $averageRating = $user->avg_rating ?? 0;
+    $ratingCount = $user->rating_count ?? 0;
+
+    $distribution = \App\Models\UserRating::where('rated_user_id', $user->id)
+        ->selectRaw('rating, COUNT(*) as count')
+        ->groupBy('rating')
+        ->pluck('count', 'rating');
+
+    $receivedRatings = \App\Models\UserRating::where('rated_user_id', $user->id)
+        ->with(['rater:id,name,profile_pic,avg_rating,rating_count', 'job:id,title'])
+        ->latest()
+        ->take(20)
+        ->get();
+
+    $givenRatings = \App\Models\UserRating::where('rater_id', $user->id)
+        ->with(['ratedUser:id,name,profile_pic,avg_rating,rating_count', 'job:id,title'])
+        ->latest()
+        ->take(20)
+        ->get();
+
+    $pendingRatings = [];
+
+    if ($user->user_type === 'recruiter') {
+        $apps = \App\Models\JobApplication::whereHas('job', function($q) use ($user) {
+                $q->where('recruiter_id', $user->id);
+            })
+            ->where('status', 'accepted')
+            ->with(['seeker:id,name,profile_pic,avg_rating,rating_count', 'job:id,title'])
+            ->get();
+
+        foreach ($apps as $app) {
+            $existing = \App\Models\UserRating::where('rater_id', $user->id)
+                ->where('rated_user_id', $app->seeker_id)
+                ->where('job_id', $app->job_id)
+                ->first();
+
+            if (! $existing) {
+                $pendingRatings[] = [
+                    'job_id' => $app->job_id,
+                    'job_title' => $app->job->title ?? 'Job',
+                    'other_user' => $app->seeker,
+                    'role' => 'seeker',
+                ];
+            }
+        }
+    } else {
+        $apps = \App\Models\JobApplication::where('seeker_id', $user->id)
+            ->where('status', 'accepted')
+            ->with(['job:id,title,recruiter_id', 'job.recruiter:id,name,profile_pic,avg_rating,rating_count'])
+            ->get();
+
+        foreach ($apps as $app) {
+            $recruiter = $app->job->recruiter ?? null;
+            if (! $recruiter) continue;
+
+            $existing = \App\Models\UserRating::where('rater_id', $user->id)
+                ->where('rated_user_id', $recruiter->id)
+                ->where('job_id', $app->job_id)
+                ->first();
+
+            if (! $existing) {
+                $pendingRatings[] = [
+                    'job_id' => $app->job_id,
+                    'job_title' => $app->job->title ?? 'Job',
+                    'other_user' => $recruiter,
+                    'role' => 'recruiter',
+                ];
+            }
+        }
+    }
+
+    return view('ratings.index', compact('user', 'averageRating', 'ratingCount', 'distribution', 'receivedRatings', 'givenRatings', 'pendingRatings'));
+})->middleware(['auth', 'verified'])->name('ratings.index');
+
+Route::post('/ratings/submit', function (\Illuminate\Http\Request $request) {
+    $controller = new \App\Http\Controllers\Api\RatingController();
+    $response = $controller->store($request);
+
+    $status = $response->getStatusCode();
+    $data = json_decode($response->getContent(), true);
+
+    if ($status === 200 && ($data['success'] ?? false)) {
+        return back()->with('success', 'Rating saved successfully.');
+    }
+
+    return back()->with('error', $data['message'] ?? 'Failed to save rating.');
+})->middleware(['auth', 'verified'])->name('ratings.submit');
 
 // Recruiter Dashboard
 Route::get('/dashboard/recruiter', function (\Illuminate\Http\Request $request) {
