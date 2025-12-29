@@ -49,10 +49,13 @@ Route::post('/applications/{id}/status', function (\Illuminate\Http\Request $req
 
 // Posted Jobs (Recruiter)
 Route::get('/jobs/posted', function (\Illuminate\Http\Request $request) {
-    $controller = new \App\Http\Controllers\Api\JobController();
-    $response = $controller->getPostedJobs($request);
-    $jobs = json_decode($response->getContent());
-    
+    // Load Eloquent models so Blade can access applications and seeker relations
+    $jobs = \App\Models\Job::with(['applications' => function($q){ $q->with('seeker'); }])
+        ->where('recruiter_id', auth()->id())
+        ->withCount('applications')
+        ->latest()
+        ->get();
+
     return view('jobs.posted', compact('jobs'));
 })->middleware(['auth', 'verified'])->name('jobs.posted');
 
