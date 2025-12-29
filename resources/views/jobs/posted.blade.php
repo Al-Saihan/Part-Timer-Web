@@ -1,30 +1,5 @@
 <x-layouts.app :title="__('Posted Jobs')">
     <div class="min-h-screen bg-slate-50">
-        <nav class="bg-white border-b border-blue-100 sticky top-0 z-20">
-            <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-                <div class="text-xl font-bold text-blue-900 tracking-tight">Part Timer</div>
-                <div class="flex gap-6 items-center">
-                    <a href="{{ route('recruiter.dashboard') }}" class="text-slate-600 hover:text-blue-600 text-sm font-medium transition-colors">Home</a>
-                    <a href="{{ route('jobs.posted') }}" class="text-blue-600 text-sm font-semibold border-b-2 border-blue-600 pb-1">Posted Jobs</a>
-                    <a href="#" class="text-slate-600 hover:text-blue-600 text-sm font-medium transition-colors">Inbox</a>
-
-                    <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open" class="text-slate-700 hover:text-blue-600 text-sm flex items-center gap-1 font-medium">
-                            Profile
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </button>
-                        <div x-show="open" @click.away="open = false" x-cloak class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl py-2 border border-slate-100 z-30">
-                            <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-blue-50">View Full Profile</a>
-                            <form action="{{ route('logout') }}" method="POST" class="border-t border-slate-50 mt-1">
-                                @csrf
-                                <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Logout</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </nav>
-
         <div class="max-w-7xl mx-auto px-4 py-8">
             @if(session('success'))
                 <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
