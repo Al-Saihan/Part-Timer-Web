@@ -80,11 +80,30 @@ Route::post('/jobs', function (\Illuminate\Http\Request $request) {
     
     $controller = new \App\Http\Controllers\Api\JobController();
     $response = $controller->store($request);
-    
-    if ($response->getStatusCode() === 200) {
+
+    $status = $response->getStatusCode();
+
+    if ($status === 200) {
         return redirect()->route('jobs.posted')->with('success', 'Job posted successfully!');
     }
-    
+
+    // Handle validation errors returned as JSON from the API controller
+    if ($status === 422) {
+        $data = json_decode($response->getContent(), true);
+
+        // Standard Laravel validation exception shape: ['message' => ..., 'errors' => [...]]
+        if (isset($data['errors']) && is_array($data['errors'])) {
+            return back()->withErrors($data['errors'])->withInput();
+        }
+
+        // Our custom wage validation returns ['validation' => [...]] with a message
+        if (isset($data['validation']) && isset($data['validation']['message'])) {
+            return back()->withErrors(['payment' => $data['validation']['message']])->withInput();
+        }
+
+        return back()->with('error', 'Failed to post job. Please check your input.')->withInput();
+    }
+
     return back()->with('error', 'Failed to post job. Please try again.')->withInput();
 })->middleware(['auth', 'verified'])->name('jobs.store');
 

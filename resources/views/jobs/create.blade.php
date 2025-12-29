@@ -64,6 +64,16 @@
                     {{ session('error') }}
                 </div>
             @endif
+            @if ($errors->any())
+                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+                    <strong class="block font-medium">There were some problems with your submission:</strong>
+                    <ul class="mt-2 list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             <!-- Job Form -->
             <div class="bg-white rounded-lg p-6">
                 <form action="{{ route('jobs.store') }}" method="POST" class="space-y-6">
