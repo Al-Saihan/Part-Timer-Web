@@ -36,6 +36,18 @@
 
             <!-- Jobs Applicants-->
             <h3 class="text-lg font-bold text-blue-900 mb-4">Job Applicants</h3>
+
+            @if(session('success'))
+                <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl mb-4">
+                    {{ session('success') }}
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl mb-4">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <div class="space-y-4">
                 @forelse($applicants as $applicant)
                     @php

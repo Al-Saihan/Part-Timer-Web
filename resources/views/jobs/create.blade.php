@@ -95,6 +95,19 @@
                         @enderror
                     </div>
 
+                    <!-- Job Location (optional) -->
+                    <div class="space-y-2">
+                        <label for="location" class="block text-sm font-medium text-blue-900">
+                            Location (optional)
+                        </label>
+                        <input type="text" id="location" name="location" value="{{ old('location') }}"
+                            class="w-full rounded-lg border border-blue-200 bg-white px-4 py-3 text-sm text-blue-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                            placeholder="e.g. Dhaka, Not Given, On-site (optional)">
+                        @error('location')
+                            <p class="text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Payment -->
                     <div class="space-y-2">
                         <label for="payment" class="block text-sm font-medium text-blue-900">

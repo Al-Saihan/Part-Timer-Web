@@ -56,6 +56,7 @@
                                 <p class="text-blue-700 text-sm mt-1">
                                     <span class="capitalize">{{ $job->difficulty }}</span> •
                                     {{ $job->working_hours }} hrs/day •
+                                    {{ $job->location ?? 'Not Given' }} •
                                     ${{ number_format($job->payment, 2) }}
                                 </p>
                                 <p class="text-blue-600 text-sm mt-2">{{ Str::limit($job->description, 100) }}</p>
@@ -98,9 +99,10 @@
                                                 <h4 class="font-semibold text-blue-900">{{ $job->title }}</h4>
                                                 <p class="text-blue-600 mt-2">{{ $job->description }}</p>
 
-                                                <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                                                <div class="mt-4 grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
                                                     <div><span class="font-semibold">Difficulty:</span> <span class="text-blue-700">{{ ucfirst($job->difficulty) }}</span></div>
                                                     <div><span class="font-semibold">Timing:</span> <span class="text-blue-700">{{ $job->working_hours }} hrs/day</span></div>
+                                                    <div><span class="font-semibold">Location:</span> <span class="text-blue-700">{{ $job->location ?? 'Not Given' }}</span></div>
                                                     <div><span class="font-semibold">Payment:</span> <span class="text-blue-700">{{ number_format($job->payment,2) }} taka/hr</span></div>
                                                 </div>
                                             </div>

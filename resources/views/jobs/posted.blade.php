@@ -99,6 +99,8 @@
                                     <span>•</span>
                                     <span>{{ $job->working_hours }} hrs/week</span>
                                     <span>•</span>
+                                    <span class="text-slate-700">{{ $job->location ?? 'Not Given' }}</span>
+                                    <span>•</span>
                                     <span class="text-blue-600 font-bold">${{ number_format($job->payment, 2) }}</span>
                                 </p>
                                 <p class="text-slate-600 text-sm mt-4 leading-relaxed">{{ Str::limit($job->description, 140) }}</p>

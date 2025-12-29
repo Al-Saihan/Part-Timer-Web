@@ -52,14 +52,15 @@
                         }
                         $payload = [
                             'job' => [
-                                'id' => $job->id ?? null,
-                                'title' => $job->title ?? '',
-                                'description' => $job->description ?? '',
-                                'difficulty' => $job->difficulty ?? '',
-                                'working_hours' => $job->working_hours ?? '',
-                                'payment' => $job->payment ?? '',
-                                'created_at' => optional($job->created_at)->toDateTimeString(),
-                            ],
+                                    'id' => $job->id ?? null,
+                                    'title' => $job->title ?? '',
+                                    'description' => $job->description ?? '',
+                                    'difficulty' => $job->difficulty ?? '',
+                                    'working_hours' => $job->working_hours ?? '',
+                                    'payment' => $job->payment ?? '',
+                                    'location' => $job->location ?? '',
+                                    'created_at' => optional($job->created_at)->toDateTimeString(),
+                                ],
                             'recruiter' => [
                                 'id' => $job->recruiter->id ?? $job->recruiter_id ?? null,
                                 'name' => $job->recruiter->name ?? '',
@@ -99,6 +100,10 @@
                                     <div class="flex items-center gap-1">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                         <span>{{ $job?->working_hours ?? '0' }} hrs/week</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 6h18M3 14h18"/></svg>
+                                        <span class="text-slate-700">{{ $job?->location ?? 'Not Given' }}</span>
                                     </div>
                                     <div class="flex items-center gap-1 font-semibold text-slate-700">
                                         <span>${{ isset($job->payment) ? number_format($job->payment, 2) : '0.00' }}</span>
@@ -171,10 +176,11 @@
                                 <div>
                                     <h5 class="font-semibold text-blue-900" x-text="selected.job.title"></h5>
                                     <p class="text-blue-600 text-sm mt-2" x-text="selected.job.description"></p>
-                                    <div class="mt-3 text-sm text-blue-700">
+                                        <div class="mt-3 text-sm text-blue-700">
                                         <div>Posted: <span x-text="new Date(selected.job.created_at).toLocaleString()"></span></div>
                                         <div>Difficulty: <span x-text="selected.job.difficulty"></span></div>
                                         <div>Timing: <span x-text="selected.job.working_hours + ' hrs/day'"></span></div>
+                                        <div>Location: <span x-text="selected.job.location || 'Not Given'"></span></div>
                                         <div>Payment: <span x-text="selected.job.payment + ' taka/hr'"></span></div>
                                     </div>
                                 </div>
