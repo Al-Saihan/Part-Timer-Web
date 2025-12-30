@@ -9,7 +9,7 @@ A Laravel + Livewire application that connects part-time job seekers with recrui
 - **Course Name:** CSE391  
 - **Name:** Al-Saihan Tajvi  
 - **Student ID:** 23301219  
-- **Email:** al.saihan.tajvi@gmail.com  
+- **Email:** al.saihan.tajvi@g.bracu.ac.bd  
 
 ---
 
